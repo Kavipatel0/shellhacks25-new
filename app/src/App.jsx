@@ -5,6 +5,11 @@ import FileSummaryModal from "./components/FileSummaryModal";
 import { getTree } from "./api/getTree";
 import { summarizeFile, getFileType } from "./api/summarizeFile";
 
+
+
+
+
+
 function App() {
   const [count, setCount] = useState(0);
   const [url, setUrl] = useState("");
@@ -247,9 +252,11 @@ function App() {
   };
 
   return (
-    <div className="app-container">
+    <div className="app-container relative overflow-hidden">
+      
       {/* Main Content */}
-      <main className="main-content">
+      <main className="main-content relative z-10">
+        
         <div className="hero-section">
           <h2 className="hero-title">Code Tree | Visualize your repository</h2>
           <h3 className="hero-subtitle">Explore your codebase at the speed of light!</h3>
