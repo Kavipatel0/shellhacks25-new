@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import FlowGraph from "./components/FlowGraph";
 import FileSummaryModal from "./components/FileSummaryModal";
+import InfoCardsSection from "./components/InfoCardsSection";
 import { getTree } from "./api/getTree";
 import { summarizeFile, getFileType } from "./api/summarizeFile";
 
@@ -258,9 +259,9 @@ function App() {
       <main className="main-content relative z-10">
         
         <div className="hero-section">
-          <h2 className="hero-title">Code Tree | Visualize your repository</h2>
-          <h3 className="hero-subtitle">Explore your codebase at the speed of light!</h3>
-          <p className="hero-description">One click away from visualizing your GitHub repository structure.</p>
+          <h2 className="hero-title">GitFlow | Interactive Repository Explorer</h2>
+          <h3 className="hero-subtitle">Transform complex repositories into interactive, explorable maps</h3>
+          <p className="hero-description">Instantly transform any GitHub repository into an explorable visual map with smart AI insights.</p>
         </div>
 
         {/* Input Section */}
@@ -287,6 +288,11 @@ function App() {
             </div>
           )}
         </div>
+
+        {/* Info Cards Section */}
+        {nodes.length > 0 && (
+          <InfoCardsSection nodes={nodes} edges={edges} repoUrl={url} />
+        )}
 
         {/* Graph Section */}
         {nodes.length > 0 && (
