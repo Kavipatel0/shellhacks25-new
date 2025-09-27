@@ -439,6 +439,21 @@ body {
   box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4) !important;
 }
 
+/* Highlighted Node Styles */
+.highlighted-node {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.8) !important;
+  border: 3px solid #ffd700 !important;
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+/* Highlighted Edge Styles */
+.highlighted-edge {
+  stroke: #ffd700 !important;
+  stroke-width: 4px !important;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6));
+}
+
 /* React Flow Handles */
 .react-flow__handle {
   width: 12px;
