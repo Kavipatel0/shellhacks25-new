@@ -3,7 +3,7 @@ import FlowGraph from "./components/FlowGraph";
 
 function App() {
   return (
-    <div className="w-[900px] mx-auto">
+    <div className="w-screen h-screen p-0 m-0">
       <FlowGraph />
     </div>
   );
