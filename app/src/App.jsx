@@ -190,9 +190,10 @@ function App() {
     });
   };
 
-  const handleFileClick = async (nodeData) => {
+  const handleFileClick = async (nodeData, nodeId) => {
     // Only handle file clicks, not folders
     if (nodeData.nodeType === 'file') {
+      console.log('📱 Opening modal...');
       setIsModalOpen(true);
       setIsLoadingSummary(true);
       setFileSummary(null);
@@ -210,21 +211,25 @@ function App() {
           branch = pathParts[3];
         }
 
-        // The nodeData.id contains the full file path from the repository root
-        // Format: owner/repo/branch/filepath
+        // The nodeId contains the full file path from the repository root
         console.log('Full node data:', nodeData);
-        console.log('Node ID:', nodeData.id);
+        console.log('Node ID:', nodeId);
         console.log('Node Label:', nodeData.label);
         
-        // Use the node ID which contains the full path
-        const fullFilePath = nodeData.id;
+        // Use the nodeId which contains the full path
+        const fullFilePath = nodeId;
         const filePath = `${owner}/${repo}/${branch}/${fullFilePath}`;
         const fileName = nodeData.label;
         const fileType = getFileType(fileName);
 
         console.log('Constructed file path:', filePath);
+        console.log('Calling summarizeFile API...');
 
         const summary = await summarizeFile(filePath, fileName, fileType);
+        console.log('✅ Summary received successfully:', summary);
+        console.log('Summary type:', typeof summary);
+        console.log('Summary keys:', Object.keys(summary || {}));
+        console.log('📱 Setting file summary and closing loading...');
         setFileSummary(summary);
       } catch (err) {
         console.error("Error summarizing file:", err);
@@ -284,6 +289,7 @@ function App() {
               initialEdges={edges} 
               onToggleFolder={toggleFolder}
               expandedFolders={expandedFolders}
+              onFileClick={handleFileClick}
             />
           </div>
         )}
@@ -310,6 +316,14 @@ function App() {
           </div>
         )}
       </main>
+      
+      {/* File Summary Modal */}
+      <FileSummaryModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        fileSummary={fileSummary}
+        isLoading={isLoadingSummary}
+      />
     </div>
   );
 }

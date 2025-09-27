@@ -91,7 +91,7 @@ const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, ta
   );
 };
 
-export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, expandedFolders }) {
+export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, expandedFolders, onFileClick }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges || []);
 
@@ -132,8 +132,11 @@ export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, 
     if (node.data.nodeType === 'folder' && onToggleFolder) {
       console.log('Calling onToggleFolder for:', node.id);
       onToggleFolder(node.id);
+    } else if (node.data.nodeType === 'file' && onFileClick) {
+      console.log('Calling onFileClick for:', node.id);
+      onFileClick(node.data, node.id);
     }
-  }, [onToggleFolder, expandedFolders]);
+  }, [onToggleFolder, onFileClick, expandedFolders]);
 
   return (
     <div className="flow-graph-container">

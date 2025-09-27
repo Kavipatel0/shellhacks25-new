@@ -13,6 +13,10 @@ const API_BASE_URL = 'http://localhost:8000'; // Update this to match your backe
  */
 export async function summarizeFile(filePath, fileName, fileType) {
   try {
+    console.log('🚀 Starting summarizeFile API call...');
+    console.log('📡 API URL:', `${API_BASE_URL}/summarize-file`);
+    console.log('📋 Request payload:', { filePath, fileName, fileType });
+    
     const response = await fetch(`${API_BASE_URL}/summarize-file`, {
       method: 'POST',
       headers: {
@@ -25,12 +29,20 @@ export async function summarizeFile(filePath, fileName, fileType) {
       }),
     });
 
+    console.log('📊 Response status:', response.status);
+    console.log('📊 Response ok:', response.ok);
+
     if (!response.ok) {
+      console.error('❌ Response not OK, attempting to parse error...');
       const errorData = await response.json();
+      console.error('❌ Error data:', errorData);
       throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
     }
 
-    return await response.json();
+    console.log('✅ Response OK, parsing JSON...');
+    const result = await response.json();
+    console.log('✅ Parsed result:', result);
+    return result;
   } catch (error) {
     console.error('Error summarizing file:', error);
     throw error;
