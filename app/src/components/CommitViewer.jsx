@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import CommitPreview from "./CommitPreview";
 
 function parseRepoInput(input) {
   // Accept full URL or owner/repo
@@ -16,7 +17,7 @@ function parseRepoInput(input) {
 }
 
 export default function CommitViewer() {
-  const [input, setInput] = useState("facebook/react");
+  const [input, setInput] = useState("SobaSkee/portfolio-v2");
   const [commits, setCommits] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,17 +43,12 @@ export default function CommitViewer() {
     }
   };
 
-  const openEmbed = (type) => {
+  const openEmbed = (commit) => {
     const parsed = parseRepoInput(input.trim());
     if (!parsed) return setError("Enter owner/repo or full GitHub URL");
-    if (type === "github.dev") {
-      setEmbedTarget(`https://github.dev/${parsed.owner}/${parsed.repo}/`);
-    } else if (type === "codesandbox") {
-      // codesandbox can open github via https://codesandbox.io/s/github/owner/repo
-      setEmbedTarget(
-        `https://codesandbox.io/s/github/${parsed.owner}/${parsed.repo}`
-      );
-    }
+
+    // codesandbox can open github via https://codesandbox.io/s/github/owner/repo
+    setEmbedTarget("SobaSkee-portfolio-v2-main");
   };
 
   return (
@@ -72,14 +68,14 @@ export default function CommitViewer() {
         >
           Fetch
         </button>
-        <button
+        {/* <button
           onClick={() => openEmbed("github.dev")}
           className="bg-gray-800 text-white px-3 py-2"
         >
           Open in github.dev
-        </button>
+        </button> */}
         <button
-          onClick={() => openEmbed("codesandbox")}
+          onClick={() => openEmbed()}
           className="bg-green-700 text-white px-3 py-2"
         >
           Open in CodeSandbox
@@ -117,15 +113,22 @@ export default function CommitViewer() {
         </div>
       )}
 
-      {embedTarget && (
-        <div className="border p-2" style={{ height: "60vh" }}>
+      {/* {embedTarget ? (
+        <div className="border p-2 h-[80vh] w-full">
           <iframe
             src={embedTarget}
             title="embed"
             style={{ width: "100%", height: "100%", border: 0 }}
           />
         </div>
-      )}
+      ) : (
+        <div className="text-sm text-gray-600 mt-4">
+          Tip: github.dev cannot be embedded due to GitHub's
+          Content-Security-Policy. Click "Open in github.dev" to open the editor
+          in a new tab. CodeSandbox previews will embed here.
+        </div>
+      )} */}
+      <CommitPreview id={embedTarget} />
     </div>
   );
 }
