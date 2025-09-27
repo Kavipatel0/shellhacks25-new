@@ -6,6 +6,7 @@ import InfoCardsSection from "./components/InfoCardsSection";
 import { getTree } from "./api/getTree";
 import { summarizeFile, getFileType } from "./api/summarizeFile";
 import { BackgroundBeams } from "./components/ui/shadcn-io/background-beams";
+import { Link } from "react-router-dom";
 
 
 
@@ -276,6 +277,17 @@ function App() {
             
             AI-powered intelligent insights, smart summaries, and code analysis to help you understand a codebase with confidence.
           </p>
+          
+          <div className="hero-actions">
+            <a 
+              href="/commits" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="commit-viewer-link"
+            >
+              📝 View Commit History
+            </a>
+          </div>
         </div>
 
         {/* Input Section */}
