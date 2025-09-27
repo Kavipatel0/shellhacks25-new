@@ -15,10 +15,11 @@ import '@xyflow/react/dist/base.css';
 
 // Custom node component that applies different styles based on nodeType
 
-const CustomNode = ({ data, id, isConnectable, onNodeClick, onToggleFolder, expandedFolders }) => {
+const CustomNode = ({ data, id, isConnectable, onNodeClick, onToggleFolder, expandedFolders, isNodeHighlighted }) => {
   const isFolder = data.nodeType === 'folder';
   const nodeClass = isFolder ? 'folder-node' : 'file-node';
   const isExpanded = expandedFolders && expandedFolders.has(id);
+  const highlighted = isNodeHighlighted ? isNodeHighlighted(id) : false;
   
   // Debug logging (can be removed later)
   if (id && isFolder) {
@@ -39,7 +40,7 @@ const CustomNode = ({ data, id, isConnectable, onNodeClick, onToggleFolder, expa
   
   return (
     <div 
-      className={`react-flow__node ${nodeClass} ${isFolder ? 'clickable-folder' : ''}`}
+      className={`react-flow__node ${nodeClass} ${isFolder ? 'clickable-folder' : ''} ${highlighted ? 'highlighted-node' : ''}`}
       onClick={handleClick}
       style={{ cursor: isFolder ? 'default' : 'pointer' }}
     >
@@ -69,7 +70,7 @@ const CustomNode = ({ data, id, isConnectable, onNodeClick, onToggleFolder, expa
 };
 
 // Custom edge component for styling
-const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data }) => {
+const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data, isEdgeHighlighted }) => {
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -79,11 +80,14 @@ const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, ta
     targetPosition,
   });
 
+  const edge = { id, source: data?.source, target: data?.target };
+  const highlighted = isEdgeHighlighted ? isEdgeHighlighted(edge) : false;
+
   return (
     <>
       <path
         id={id}
-        className="react-flow__edge-path"
+        className={`react-flow__edge-path ${highlighted ? 'highlighted-edge' : ''}`}
         d={edgePath}
         data-edge-type={data?.edgeType || 'default'}
       />
@@ -91,17 +95,17 @@ const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, ta
   );
 };
 
-export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, expandedFolders, onFileClick }) {
+export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, expandedFolders, onFileClick, selectedFilePath, isNodeHighlighted, isEdgeHighlighted }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges || []);
 
   const nodeTypes = useMemo(() => ({
-    custom: (props) => <CustomNode {...props} onToggleFolder={onToggleFolder} expandedFolders={expandedFolders} />,
-  }), [onToggleFolder, expandedFolders]);
+    custom: (props) => <CustomNode {...props} onToggleFolder={onToggleFolder} expandedFolders={expandedFolders} isNodeHighlighted={isNodeHighlighted} />,
+  }), [onToggleFolder, expandedFolders, isNodeHighlighted]);
 
   const edgeTypes = useMemo(() => ({
-    default: CustomEdge,
-  }), []);
+    default: (props) => <CustomEdge {...props} isEdgeHighlighted={isEdgeHighlighted} />,
+  }), [isEdgeHighlighted]);
 
   useEffect(() => {
     if (initialNodes) {

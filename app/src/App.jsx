@@ -27,6 +27,7 @@ function App() {
   const [allNodes, setAllNodes] = useState([]);
   const [allEdges, setAllEdges] = useState([]);
   const [previousRepos, setPreviousRepos] = useState([]);
+  const [selectedFilePath, setSelectedFilePath] = useState(null);
 
   // Load previous repositories from localStorage on component mount
   useEffect(() => {
@@ -204,6 +205,9 @@ function App() {
       setIsModalOpen(true);
       setIsLoadingSummary(true);
       setFileSummary(null);
+      
+      // Set the selected file path for highlighting
+      setSelectedFilePath(nodeId);
 
       try {
         // Extract repository info from the current URL
@@ -251,6 +255,37 @@ function App() {
     setIsModalOpen(false);
     setFileSummary(null);
     setIsLoadingSummary(false);
+    // Keep the selectedFilePath for highlighting - don't clear it
+  };
+
+  // Function to get the path from root to selected file
+  const getPathToFile = (filePath) => {
+    if (!filePath) return [];
+    
+    const pathParts = filePath.split('/');
+    const path = [];
+    
+    // Build the path from root to file
+    for (let i = 0; i < pathParts.length; i++) {
+      const currentPath = pathParts.slice(0, i + 1).join('/');
+      path.push(currentPath);
+    }
+    
+    return path;
+  };
+
+  // Function to check if a node should be highlighted
+  const isNodeHighlighted = (nodeId) => {
+    if (!selectedFilePath) return false;
+    const pathToFile = getPathToFile(selectedFilePath);
+    return pathToFile.includes(nodeId);
+  };
+
+  // Function to check if an edge should be highlighted
+  const isEdgeHighlighted = (edge) => {
+    if (!selectedFilePath) return false;
+    const pathToFile = getPathToFile(selectedFilePath);
+    return pathToFile.includes(edge.source) && pathToFile.includes(edge.target);
   };
 
   return (
@@ -321,6 +356,9 @@ function App() {
               onToggleFolder={toggleFolder}
               expandedFolders={expandedFolders}
               onFileClick={handleFileClick}
+              selectedFilePath={selectedFilePath}
+              isNodeHighlighted={isNodeHighlighted}
+              isEdgeHighlighted={isEdgeHighlighted}
             />
           </div>
         )}
