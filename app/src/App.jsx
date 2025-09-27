@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./App.css";
 import FlowGraph from "./components/FlowGraph";
 import FileSummaryModal from "./components/FileSummaryModal";
+import InfoCardsSection from "./components/InfoCardsSection";
 import { getTree } from "./api/getTree";
 import { summarizeFile, getFileType } from "./api/summarizeFile";
 
@@ -280,6 +281,11 @@ function App() {
             </div>
           )}
         </div>
+
+        {/* Info Cards Section */}
+        {nodes.length > 0 && (
+          <InfoCardsSection nodes={nodes} edges={edges} repoUrl={url} />
+        )}
 
         {/* Graph Section */}
         {nodes.length > 0 && (
