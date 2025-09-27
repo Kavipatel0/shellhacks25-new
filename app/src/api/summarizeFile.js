@@ -2,7 +2,9 @@
  * API service for file summarization
  */
 
-const API_BASE_URL = 'http://localhost:8000'; // Update this to match your backend URL
+const API_BASE_URL = import.meta.env.DEV
+  ? "http://localhost:8000"
+  : "https://shellhacks25-uy86.vercel.app/"; // Update this to match your backend URL
 
 /**
  * Summarize a file using the backend API
@@ -14,9 +16,9 @@ const API_BASE_URL = 'http://localhost:8000'; // Update this to match your backe
 export async function summarizeFile(filePath, fileName, fileType) {
   try {
     const response = await fetch(`${API_BASE_URL}/summarize-file`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         filePath,
@@ -27,12 +29,14 @@ export async function summarizeFile(filePath, fileName, fileType) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      throw new Error(
+        errorData.detail || `HTTP error! status: ${response.status}`
+      );
     }
 
     return await response.json();
   } catch (error) {
-    console.error('Error summarizing file:', error);
+    console.error("Error summarizing file:", error);
     throw error;
   }
 }
@@ -43,34 +47,34 @@ export async function summarizeFile(filePath, fileName, fileType) {
  * @returns {string} The file type/extension
  */
 export function getFileType(fileName) {
-  const extension = fileName.split('.').pop()?.toLowerCase();
+  const extension = fileName.split(".").pop()?.toLowerCase();
   const typeMap = {
-    'js': 'JavaScript',
-    'jsx': 'React JSX',
-    'ts': 'TypeScript',
-    'tsx': 'React TypeScript',
-    'py': 'Python',
-    'java': 'Java',
-    'cpp': 'C++',
-    'c': 'C',
-    'css': 'CSS',
-    'html': 'HTML',
-    'json': 'JSON',
-    'md': 'Markdown',
-    'yml': 'YAML',
-    'yaml': 'YAML',
-    'xml': 'XML',
-    'php': 'PHP',
-    'rb': 'Ruby',
-    'go': 'Go',
-    'rs': 'Rust',
-    'swift': 'Swift',
-    'kt': 'Kotlin',
-    'scala': 'Scala',
-    'sh': 'Shell Script',
-    'sql': 'SQL',
-    'dockerfile': 'Docker',
+    js: "JavaScript",
+    jsx: "React JSX",
+    ts: "TypeScript",
+    tsx: "React TypeScript",
+    py: "Python",
+    java: "Java",
+    cpp: "C++",
+    c: "C",
+    css: "CSS",
+    html: "HTML",
+    json: "JSON",
+    md: "Markdown",
+    yml: "YAML",
+    yaml: "YAML",
+    xml: "XML",
+    php: "PHP",
+    rb: "Ruby",
+    go: "Go",
+    rs: "Rust",
+    swift: "Swift",
+    kt: "Kotlin",
+    scala: "Scala",
+    sh: "Shell Script",
+    sql: "SQL",
+    dockerfile: "Docker",
   };
-  
-  return typeMap[extension] || extension?.toUpperCase() || 'Unknown';
+
+  return typeMap[extension] || extension?.toUpperCase() || "Unknown";
 }
