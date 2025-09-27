@@ -252,9 +252,9 @@ function App() {
       {/* Main Content */}
       <main className="main-content">
         <div className="hero-section">
-          <h2 className="hero-title">Code Tree | Visualize your repository</h2>
-          <h3 className="hero-subtitle">Explore your codebase at the speed of light!</h3>
-          <p className="hero-description">One click away from visualizing your GitHub repository structure.</p>
+          <h2 className="hero-title">GitFlow | Interactive Repository Explorer</h2>
+          <h3 className="hero-subtitle">Transform complex repositories into interactive, explorable maps</h3>
+          <p className="hero-description">Instantly transform any GitHub repository into an explorable visual map with smart AI insights.</p>
         </div>
 
         {/* Input Section */}
