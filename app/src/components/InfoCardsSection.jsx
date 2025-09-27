@@ -25,7 +25,7 @@ const ForkIcon = () => (
 // Tech stack icon
 const TechIcon = () => (
   <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-    <path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2m0-14h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8m0-14v14m8-14h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2m0-14v14"/>
+    <path d="M3 3h18v2H3V3zm0 4h18v2H3V7zm0 4h18v2H3v-2zm0 4h18v2H3v-2zm0 4h18v2H3v-2z"/>
   </svg>
 );
 
@@ -82,19 +82,23 @@ export default function InfoCardsSection({ nodes = [], edges = [], repoUrl = "" 
 
   const containerStyle = {
     display: 'flex',
-    justifyContent: 'center',
-    gap: '20px',
+    justifyContent: 'space-between',
+    gap: '2rem',
     flexWrap: 'nowrap', // Changed to nowrap to keep all in one row
     marginBottom: '32px',
-    padding: '0 20px',
-    overflowX: 'auto' // Allow horizontal scrolling on small screens
+    padding: '2rem',
+    overflowX: 'auto', // Allow horizontal scrolling on small screens
+    background: '#2d2d2d',
+    borderRadius: '20px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+    backdropFilter: 'blur(10px)',
+    border: '1px solid rgba(255, 255, 255, 0.1)'
   };
 
   const cardWrapperStyle = {
-    transition: 'transform 0.2s ease',
-    cursor: 'pointer',
-    width: '320px', // Fixed width for all cards
-    flexShrink: 0 // Prevent cards from shrinking
+    flex: '1', // Allow cards to grow and fill available space
+    maxWidth: '350px', // Maximum width to prevent cards from getting too wide
+    minWidth: '280px' // Minimum width to ensure readability
   };
 
   // Format tech stack for display
@@ -106,11 +110,7 @@ export default function InfoCardsSection({ nodes = [], edges = [], repoUrl = "" 
   return (
     <div style={containerStyle}>
       {/* Tech Stack Card */}
-      <div 
-        style={cardWrapperStyle}
-        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-      >
+      <div style={cardWrapperStyle}>
         <InfoCard
           title="Tech Stack"
           subtitle="Technologies Used"
@@ -134,11 +134,7 @@ export default function InfoCardsSection({ nodes = [], edges = [], repoUrl = "" 
       </div>
       
       {/* Languages Card */}
-      <div 
-        style={cardWrapperStyle}
-        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-      >
+      <div style={cardWrapperStyle}>
         <InfoCard
           title="Languages"
           subtitle="Code Distribution"
@@ -157,11 +153,7 @@ export default function InfoCardsSection({ nodes = [], edges = [], repoUrl = "" 
       </div>
       
       {/* GitHub Stats Card */}
-      <div 
-        style={cardWrapperStyle}
-        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-      >
+      <div style={cardWrapperStyle}>
         <InfoCard
           title="GitHub Stats"
           subtitle="Repository Metrics"

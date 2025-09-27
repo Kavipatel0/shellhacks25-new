@@ -5,6 +5,7 @@ import FileSummaryModal from "./components/FileSummaryModal";
 import InfoCardsSection from "./components/InfoCardsSection";
 import { getTree } from "./api/getTree";
 import { summarizeFile, getFileType } from "./api/summarizeFile";
+import { BackgroundBeams } from "./components/ui/shadcn-io/background-beams";
 
 
 
@@ -254,14 +255,27 @@ function App() {
 
   return (
     <div className="app-container relative overflow-hidden">
+      {/* Background Beams */}
+      <BackgroundBeams className="fixed inset-0 z-0" />
       
       {/* Main Content */}
       <main className="main-content relative z-10">
         
         <div className="hero-section">
-          <h2 className="hero-title">GitFlow | Interactive Repository Explorer</h2>
-          <h3 className="hero-subtitle">Transform complex repositories into interactive, explorable maps</h3>
-          <p className="hero-description">Instantly transform any GitHub repository into an explorable visual map with smart AI insights.</p>
+
+          
+          <h1 className="hero-project-name">GitFlow</h1>
+          
+          <h2 className="hero-main-title">
+            Where code meets
+            <span className="hero-highlight"> clarity</span>
+          </h2>
+          
+          <p className="hero-description">
+            Transform any GitHub repository into an interactive, visual tree structure.
+            
+            AI-powered intelligent insights, smart summaries, and code analysis to help you understand a codebase with confidence.
+          </p>
         </div>
 
         {/* Input Section */}
@@ -291,7 +305,11 @@ function App() {
 
         {/* Info Cards Section */}
         {nodes.length > 0 && (
-          <InfoCardsSection nodes={nodes} edges={edges} repoUrl={url} />
+          <InfoCardsSection 
+            nodes={allNodes} 
+            edges={allEdges} 
+            repoUrl={url} 
+          />
         )}
 
         {/* Graph Section */}
@@ -337,6 +355,11 @@ function App() {
         fileSummary={fileSummary}
         isLoading={isLoadingSummary}
       />
+
+      {/* Footer */}
+      <footer className="footer">
+        <p className="footer-text">Project By: Kavi Patel, Stanley Ke, Arnav Bagmar, Hieu Nguyen</p>
+      </footer>
     </div>
   );
 }
