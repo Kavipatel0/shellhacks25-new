@@ -31,7 +31,7 @@ export default function FlowGraph() {
   const onEdgesChange = useCallback(() => {}, []);
 
   return (
-    <div className="w-full h-[60vh]">
+    <div className="w-full h-full">
       <ReactFlow
         nodes={initialNodes}
         edges={initialEdges}
