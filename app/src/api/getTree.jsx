@@ -19,12 +19,19 @@ async function fetchJSON(url) {
 
 function parseGitHubUrl(input) {
   try {
+    console.log('=== parseGitHubUrl called ===');
+    console.log('Input URL:', input);
     const u = new URL(input.trim());
+    console.log('Parsed URL:', u);
     const parts = u.pathname.replace(/^\/+/, "").split("/");
+    console.log('URL parts:', parts);
     const [owner, repo, maybeTree, ref, ...rest] = parts;
     const subpath = maybeTree === "tree" && rest.length ? rest.join("/") : "";
+    console.log('Parsed result:', { owner, repo, ref: maybeTree === "tree" ? ref : undefined, subpath });
     return { owner, repo, ref: maybeTree === "tree" ? ref : undefined, subpath };
-  } catch {
+  } catch (error) {
+    console.error('parseGitHubUrl error:', error);
+    console.error('Input that failed:', input);
     throw new Error("Invalid GitHub repository URL");
   }
 }
@@ -46,7 +53,7 @@ function buildNodesAndEdges(tree) {
   // Edges connect parent folder to child
   const nodes = [];
   const edges = [];
-  const xGap = 180, yGap = 80; // Reduced spacing but safe from overlaps
+  const xGap = 250, yGap = 100; // Increased spacing for better readability
 
   // Build a map from path to item, and parent→children map
   const pathToItem = {};
@@ -76,44 +83,34 @@ function buildNodesAndEdges(tree) {
     });
   }
 
-  // Traverse and assign positions - left to right tree structure
-  let row = 0;
+  // Simple layout: assign positions to all items
   const positions = {};
-  function dfs(path, depth) {
-    const children = parentToChildren[path] ? sortChildren(parentToChildren[path]) : [];
-    if (children.length === 0) {
-      // Leaf node (file or empty folder)
-      const y = row * yGap;
-      const x = depth * xGap;
-      positions[path] = { x, y };
-      row += 1;
-      return { minY: y, maxY: y };
-    } else {
-      // Folder with children
-      let minY = null, maxY = null;
-      children.forEach(child => {
-        const { minY: cMin, maxY: cMax } = dfs(child, depth + 1);
-        if (minY === null || cMin < minY) minY = cMin;
-        if (maxY === null || cMax > maxY) maxY = cMax;
-      });
-      // Center parent between its children vertically
-      const y = Math.round((minY + maxY) / 2);
-      const x = depth * xGap;
-      if (path !== null) positions[path] = { x, y };
-      return { minY, maxY };
-    }
-  }
-  // Roots are parentToChildren[null]
-  const roots = parentToChildren[null] ? sortChildren(parentToChildren[null]) : [];
-  roots.forEach(root => {
-    dfs(root, 0);
+  const depthCounts = {};
+  
+  // First pass: count items at each depth
+  tree.forEach(item => {
+    const parts = item.path.split('/');
+    const depth = parts.length - 1;
+    depthCounts[depth] = (depthCounts[depth] || 0) + 1;
+  });
+  
+  // Second pass: assign positions
+  const depthRows = {};
+  tree.forEach(item => {
+    const parts = item.path.split('/');
+    const depth = parts.length - 1;
+    const y = (depthRows[depth] || 0) * yGap;
+    const x = depth * xGap;
+    positions[item.path] = { x, y };
+    depthRows[depth] = (depthRows[depth] || 0) + 1;
   });
 
   // Create nodes with computed positions
-  Object.keys(positions).forEach(id => {
-    const item = pathToItem[id];
+  tree.forEach(item => {
+    const id = item.path;
     const isFolder = item.type === 'tree';
     const label = id.split('/').slice(-1)[0];
+    
     nodes.push({
       id,
       data: { 
@@ -132,11 +129,24 @@ function buildNodesAndEdges(tree) {
     if (parts.length > 1) {
       const parentPath = parts.slice(0, -1).join('/');
       if (nodeIds.has(parentPath)) {
+        const parentItem = pathToItem[parentPath];
+        const isParentFolder = parentItem && parentItem.type === 'tree';
+        const isCurrentFolder = item.type === 'tree';
+        
+        // Determine edge type for styling
+        let edgeType = 'folder-to-file';
+        if (isParentFolder && isCurrentFolder) {
+          edgeType = 'folder-to-folder';
+        }
+        
         edges.push({
           id: `${parentPath}-${id}`,
           source: parentPath,
           target: id,
           type: 'default',
+          data: {
+            edgeType: edgeType
+          }
         });
       }
     }
