@@ -12,12 +12,23 @@ import {
 import '@xyflow/react/dist/base.css';
 
 // Custom node component that applies different styles based on nodeType
-const CustomNode = ({ data, isConnectable }) => {
+const CustomNode = ({ data, id, isConnectable, onNodeClick }) => {
   const isFolder = data.nodeType === 'folder';
   const nodeClass = isFolder ? 'folder-node' : 'file-node';
   
+  const handleClick = () => {
+    if (onNodeClick) {
+      // Pass both the data and the node id
+      onNodeClick({ ...data, id });
+    }
+  };
+  
   return (
-    <div className={`react-flow__node ${nodeClass}`}>
+    <div 
+      className={`react-flow__node ${nodeClass}`}
+      onClick={handleClick}
+      style={{ cursor: isFolder ? 'default' : 'pointer' }}
+    >
       <Handle
         type="target"
         position={Position.Top}
@@ -36,13 +47,13 @@ const CustomNode = ({ data, isConnectable }) => {
   );
 };
 
-const nodeTypes = {
-  custom: CustomNode,
-};
-
-export default function FlowGraph({ initialNodes, initialEdges }) {
+export default function FlowGraph({ initialNodes, initialEdges, onNodeClick }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges || []);
+
+  const nodeTypes = {
+    custom: (props) => <CustomNode {...props} onNodeClick={onNodeClick} />,
+  };
 
   useEffect(() => {
     if (initialNodes) {
