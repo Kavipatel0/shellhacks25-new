@@ -26,6 +26,7 @@ export default function CommitViewer() {
   const fetchCommits = async () => {
     setError(null);
     const parsed = parseRepoInput(input.trim());
+    console.log(parsed);
     if (!parsed) return setError("Enter owner/repo or full GitHub URL");
     setLoading(true);
     try {
@@ -46,9 +47,10 @@ export default function CommitViewer() {
   const openEmbed = (commit) => {
     const parsed = parseRepoInput(input.trim());
     if (!parsed) return setError("Enter owner/repo or full GitHub URL");
-
+    const embedTarget = `${parsed.owner}-${parsed.repo}-${commit || "main"}`;
+    console.log(embedTarget);
     // codesandbox can open github via https://codesandbox.io/s/github/owner/repo
-    setEmbedTarget("SobaSkee-portfolio-v2-main");
+    setEmbedTarget(embedTarget);
   };
 
   return (
