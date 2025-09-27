@@ -144,10 +144,13 @@ function App() {
       }
     });
 
-    console.log('Final visible nodes count:', visibleNodes.length);
+    // Apply dynamic positioning to visible nodes
+    const positionedNodes = calculateNodePositions(visibleNodes, visibleEdges);
+    
+    console.log('Final visible nodes count:', positionedNodes.length);
     console.log('Final visible edges count:', visibleEdges.length);
     console.log('=== getVisibleNodesAndEdges end ===');
-    return { visibleNodes, visibleEdges };
+    return { visibleNodes: positionedNodes, visibleEdges };
   };
 
   const handleSubmit = async (e, urlToUse = null) => {
@@ -286,6 +289,101 @@ function App() {
     if (!selectedFilePath) return false;
     const pathToFile = getPathToFile(selectedFilePath);
     return pathToFile.includes(edge.source) && pathToFile.includes(edge.target);
+  };
+
+  // Function to calculate dynamic Y positions for better organization
+  const calculateNodePositions = (nodes, edges) => {
+    if (nodes.length === 0) return nodes;
+    
+    const nodeMap = new Map();
+    const childrenMap = new Map();
+    const parentMap = new Map();
+    
+    // Initialize maps
+    nodes.forEach(node => {
+      nodeMap.set(node.id, node);
+      childrenMap.set(node.id, []);
+    });
+    
+    // Build relationships from edges
+    edges.forEach(edge => {
+      childrenMap.get(edge.source)?.push(edge.target);
+      parentMap.set(edge.target, edge.source);
+    });
+    
+    // Find root nodes (nodes with no parents)
+    const rootNodes = nodes.filter(node => !parentMap.has(node.id));
+    
+    if (rootNodes.length === 0) {
+      // Fallback: treat all nodes as roots if no clear hierarchy
+      return nodes.map((node, index) => ({
+        ...node,
+        position: {
+          x: 100 + (index * 250),
+          y: 200
+        }
+      }));
+    }
+    
+    // Build tree structure and assign levels
+    const levelMap = new Map();
+    const visited = new Set();
+    
+    const assignLevel = (nodeId, level = 0) => {
+      if (visited.has(nodeId)) return;
+      visited.add(nodeId);
+      
+      levelMap.set(nodeId, level);
+      const children = childrenMap.get(nodeId) || [];
+      
+      children.forEach(childId => {
+        assignLevel(childId, level + 1);
+      });
+    };
+    
+    // Assign levels starting from root nodes
+    rootNodes.forEach(root => assignLevel(root.id, 0));
+    
+    // Group nodes by level
+    const levelGroups = new Map();
+    nodes.forEach(node => {
+      const level = levelMap.get(node.id) || 0;
+      if (!levelGroups.has(level)) {
+        levelGroups.set(level, []);
+      }
+      levelGroups.get(level).push(node);
+    });
+    
+    // Sort levels
+    const sortedLevels = Array.from(levelGroups.keys()).sort((a, b) => a - b);
+    
+    // Calculate positions
+    const updatedNodes = nodes.map(node => {
+      const level = levelMap.get(node.id) || 0;
+      const levelIndex = sortedLevels.indexOf(level);
+      const nodesInLevel = levelGroups.get(level) || [];
+      const nodeIndex = nodesInLevel.findIndex(n => n.id === node.id);
+      
+      // Horizontal spacing between levels
+      const xSpacing = 350;
+      const xPosition = levelIndex * xSpacing + 100;
+      
+      // Vertical spacing within level
+      const ySpacing = 150;
+      const totalLevelHeight = (nodesInLevel.length - 1) * ySpacing;
+      const startY = 200;
+      const yPosition = startY + (nodeIndex * ySpacing) - (totalLevelHeight / 2);
+      
+      return {
+        ...node,
+        position: {
+          x: xPosition,
+          y: yPosition
+        }
+      };
+    });
+    
+    return updatedNodes;
   };
 
   return (
