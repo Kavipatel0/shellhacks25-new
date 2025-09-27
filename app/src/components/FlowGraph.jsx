@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import {
   ReactFlow,
   Controls,
@@ -8,27 +8,59 @@ import {
   addEdge,
   Handle,
   Position,
+  getBezierPath,
+  EdgeLabelRenderer,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 
 // Custom node component that applies different styles based on nodeType
-const CustomNode = ({ data, isConnectable }) => {
+
+const CustomNode = ({ data, id, isConnectable, onNodeClick, onToggleFolder, expandedFolders }) => {
   const isFolder = data.nodeType === 'folder';
   const nodeClass = isFolder ? 'folder-node' : 'file-node';
+  const isExpanded = expandedFolders && expandedFolders.has(id);
+  
+  // Debug logging (can be removed later)
+  if (id && isFolder) {
+    console.log('CustomNode render:', {
+      id: id,
+      isFolder,
+      isExpanded,
+      expandedFolders: expandedFolders ? Array.from(expandedFolders) : 'null'
+    });
+  }
+  
+  const handleClick = () => {
+    if (onNodeClick) {
+      // Pass both the data and the node id
+      onNodeClick({ ...data, id });
+    }
+  };
   
   return (
-    <div className={`react-flow__node ${nodeClass}`}>
+    <div 
+      className={`react-flow__node ${nodeClass} ${isFolder ? 'clickable-folder' : ''}`}
+      onClick={handleClick}
+      style={{ cursor: isFolder ? 'default' : 'pointer' }}
+    >
       <Handle
         type="target"
-        position={Position.Top}
+        position={Position.Left}
         isConnectable={isConnectable}
         className="w-3 h-3 !bg-white !border-2 !border-gray-400"
       />
-      {isFolder && <div className="folder-icon"></div>}
+      {isFolder && (
+        <div className="folder-icon-container">
+          <div className="folder-icon"></div>
+          <div className={`expand-indicator ${isExpanded ? 'expanded' : 'collapsed'}`}>
+            {isExpanded ? '−' : '+'}
+          </div>
+        </div>
+      )}
       <div className="react-flow__node-label">{data.label}</div>
       <Handle
         type="source"
-        position={Position.Bottom}
+        position={Position.Right}
         isConnectable={isConnectable}
         className="w-3 h-3 !bg-white !border-2 !border-gray-400"
       />
@@ -36,13 +68,40 @@ const CustomNode = ({ data, isConnectable }) => {
   );
 };
 
-const nodeTypes = {
-  custom: CustomNode,
+// Custom edge component for styling
+const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data }) => {
+  const [edgePath, labelX, labelY] = getBezierPath({
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+  });
+
+  return (
+    <>
+      <path
+        id={id}
+        className="react-flow__edge-path"
+        d={edgePath}
+        data-edge-type={data?.edgeType || 'default'}
+      />
+    </>
+  );
 };
 
-export default function FlowGraph({ initialNodes, initialEdges }) {
+export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, expandedFolders, onFileClick }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges || []);
+
+  const nodeTypes = useMemo(() => ({
+    custom: (props) => <CustomNode {...props} onToggleFolder={onToggleFolder} expandedFolders={expandedFolders} />,
+  }), [onToggleFolder, expandedFolders]);
+
+  const edgeTypes = useMemo(() => ({
+    default: CustomEdge,
+  }), []);
 
   useEffect(() => {
     if (initialNodes) {
@@ -64,29 +123,36 @@ export default function FlowGraph({ initialNodes, initialEdges }) {
     [],
   );
 
+  const onNodeClick = useCallback((event, node) => {
+    console.log('=== Node clicked via React Flow ===');
+    console.log('Node ID:', node.id);
+    console.log('Node data:', node.data);
+    console.log('Is folder:', node.data.nodeType === 'folder');
+    console.log('expandedFolders before click:', expandedFolders ? Array.from(expandedFolders) : 'null');
+    if (node.data.nodeType === 'folder' && onToggleFolder) {
+      console.log('Calling onToggleFolder for:', node.id);
+      onToggleFolder(node.id);
+    } else if (node.data.nodeType === 'file' && onFileClick) {
+      console.log('Calling onFileClick for:', node.id);
+      onFileClick(node.data, node.id);
+    }
+  }, [onToggleFolder, onFileClick, expandedFolders]);
+
   return (
-    <div
-      style={{
-        width: "100vw",
-        height: "80vh", // Increased height for vertical tree layout
-        border: "2px solid #e2e8f0",
-        borderRadius: "16px",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-        background: "linear-gradient(135deg, #1f2937 0%, #111827 100%)",
-        overflow: "hidden",
-      }}
-    >
+    <div className="flow-graph-container">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={onNodeClick}
         fitView
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
       >
         <Background 
-          color="#374151" 
+          color="#404040" 
           gap={20} 
           size={1}
           variant="dots"
