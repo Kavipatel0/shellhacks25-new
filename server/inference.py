@@ -6,6 +6,21 @@ import requests
 import os
 from typing import Optional
 
+# Load environment variables from .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # If python-dotenv is not available, try to manually load .env
+    try:
+        with open('.env', 'r') as f:
+            for line in f:
+                if line.strip() and not line.startswith('#'):
+                    key, value = line.strip().split('=', 1)
+                    os.environ[key] = value
+    except FileNotFoundError:
+        pass
+
 app = FastAPI()
 
 # Add CORS middleware to allow frontend requests
@@ -18,7 +33,18 @@ app.add_middleware(
 )
 
 # Configure Gemini API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY")
+print(f"🔑 GEMINI_API_KEY loaded: {'✅ Yes' if api_key else '❌ No'}")
+if api_key:
+    print(f"🔑 API Key starts with: {api_key[:10]}...")
+else:
+    print("❌ GEMINI_API_KEY not found in environment variables")
+    print("📋 Available environment variables:")
+    for key, value in os.environ.items():
+        if 'GEMINI' in key or 'API' in key:
+            print(f"   {key}: {value[:10] if value else 'None'}...")
+
+genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-2.5-flash')
 
 class InferenceBody(BaseModel):

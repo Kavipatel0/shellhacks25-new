@@ -18,6 +18,12 @@ echo "🔧 Starting FastAPI server on http://localhost:8000"
 cd server
 source venv/bin/activate
 
+# Load environment variables from .env file
+if [ -f "../.env" ]; then
+    echo "📋 Loading environment variables from .env file..."
+    export $(grep -v '^#' ../.env | xargs)
+fi
+
 # Check if GEMINI_API_KEY is set
 if [ -z "$GEMINI_API_KEY" ]; then
     echo "⚠️  Warning: GEMINI_API_KEY environment variable not set!"
