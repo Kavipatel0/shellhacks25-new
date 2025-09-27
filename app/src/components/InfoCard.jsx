@@ -3,10 +3,8 @@ import React from 'react';
 // Information Card component with inline styles for better compatibility
 function InfoCard({ title, subtitle, icon, color, stats, customContent }) {
   const cardStyle = {
-    border: '4px solid #000000',
     borderRadius: '12px',
     overflow: 'hidden',
-    boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)',
     backgroundColor: '#ffffff',
     width: '100%',
     height: '280px', // Fixed height for all cards
@@ -35,17 +33,8 @@ function InfoCard({ title, subtitle, icon, color, stats, customContent }) {
   return (
     <div style={cardStyle}>
       <div style={headerStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
           {icon}
-          <span style={{
-            fontSize: '12px',
-            fontWeight: 'bold',
-            backgroundColor: 'rgba(255,255,255,0.2)',
-            padding: '4px 8px',
-            borderRadius: '12px'
-          }}>
-            Active
-          </span>
         </div>
         <h3 style={{ fontSize: '18px', fontWeight: 'bold', margin: '8px 0 4px 0' }}>{title}</h3>
         <p style={{ fontSize: '14px', opacity: 0.9, margin: 0 }}>{subtitle}</p>
