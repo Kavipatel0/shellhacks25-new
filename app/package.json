@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@xyflow/react": "^12.8.6",
+    "openai": "^5.23.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "reactflow": "^11.8.0",
@@ -17,6 +19,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@tailwindcss/vite": "^4.1.13",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.3",
