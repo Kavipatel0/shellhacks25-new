@@ -1,36 +1,66 @@
 import { exec } from "child_process";
 import { promisify } from "util";
-import { mkdirSync, rmSync, existsSync, writeFileSync, readFileSync } from "fs";
+import { mkdirSync, rmSync, existsSync, writeFileSync, readFileSync, readdirSync, statSync } from "fs";
 import path from "path";
 
 const execAsync = promisify(exec);
 const tmpDir = path.resolve("./tmp");
 
 function detectProjectType(workdir) {
-  const pkgPath = path.join(workdir, "package.json");
-  if (!existsSync(pkgPath)) return "node"; // fallback
+  // First check root directory
+  let pkgPath = path.join(workdir, "package.json");
+  let projectDir = workdir;
+  
+  if (!existsSync(pkgPath)) {
+    // If no package.json in root, look for it in subdirectories
+    const subdirs = readdirSync(workdir).filter(item => 
+      statSync(path.join(workdir, item)).isDirectory()
+    );
+    
+    for (const subdir of subdirs) {
+      const subPkgPath = path.join(workdir, subdir, "package.json");
+      if (existsSync(subPkgPath)) {
+        pkgPath = subPkgPath;
+        projectDir = path.join(workdir, subdir);
+        console.log(`Found package.json in subdirectory: ${subdir}`);
+        break;
+      }
+    }
+    
+    if (!existsSync(pkgPath)) {
+      return { type: "node", projectDir: workdir }; // fallback
+    }
+  }
 
   const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
   const scripts = pkg.scripts || {};
   console.log("Detected scripts:", scripts);
 
-  if (scripts["build"].includes("next build")) {
+  let projectType = "node"; // fallback
+  if (scripts["build"] && scripts["build"].includes("next build")) {
     console.log("Detected Next.js project");
-    return "nextjs";
+    projectType = "nextjs";
+  } else if (scripts["react-scripts build"]) {
+    projectType = "react"; // CRA
+  } else if (scripts["build"] && scripts["build"].includes("vite build")) {
+    projectType = "vite";
+  } else if (scripts["nest build"]) {
+    projectType = "nestjs";
   }
-  if (scripts["react-scripts build"]) return "react"; // CRA
-  if (scripts["vue-cli-service build"]) return "vue";
-  if (scripts["nest build"]) return "nestjs";
-  return "node"; // fallback
+  
+  return { type: projectType, projectDir };
 }
 
-function generateDockerfile(workdir, type) {
+function generateDockerfile(workdir, type, projectDir) {
+  const relativeProjectPath = path.relative(workdir, projectDir);
+  const copyPath = relativeProjectPath === "." ? "." : `./${relativeProjectPath}`;
+  
   let dockerfile = `
 FROM node:18-alpine
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
+COPY ${copyPath}/package*.json ./
+RUN npm install --legacy-peer-deps
+COPY ${copyPath} ./
 `;
 
   switch (type) {
@@ -51,12 +81,11 @@ CMD ["serve", "-s", "build", "-l", "3000"]
 `;
       break;
 
-    case "vue":
+    case "vite":
       dockerfile += `
 RUN npm run build
-RUN npm install -g serve
 EXPOSE 3000
-CMD ["serve", "-s", "dist", "-l", "3000"]
+CMD ["npm", "run", "preview", "--", "--port", "3000", "--host"]
 `;
       break;
 
@@ -102,11 +131,11 @@ export async function spawnBuildAndRun({ owner, repo, commit, id }, onUpdate) {
     }
 
     const dockerfilePath = path.join(workdir, "Dockerfile");
-    const projectType = detectProjectType(workdir);
+    const { type: projectType, projectDir } = detectProjectType(workdir);
 
     if (!existsSync(dockerfilePath)) {
       console.log(`No Dockerfile found, generating one for ${projectType}...`);
-      generateDockerfile(workdir, projectType);
+      generateDockerfile(workdir, projectType, projectDir);
     } else {
       console.log("Dockerfile already exists in repo.");
     }
