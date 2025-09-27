@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 import FlowGraph from "./components/FlowGraph";
+import FileSummaryModal from "./components/FileSummaryModal";
 import { getTree } from "./api/getTree";
+import { summarizeFile, getFileType } from "./api/summarizeFile";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -9,6 +11,11 @@ function App() {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [error, setError] = useState("");
+  
+  // File summary modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [fileSummary, setFileSummary] = useState(null);
+  const [isLoadingSummary, setIsLoadingSummary] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
   const [allNodes, setAllNodes] = useState([]);
   const [allEdges, setAllEdges] = useState([]);
@@ -181,6 +188,57 @@ function App() {
       console.log('=== toggleFolder end ===');
       return newExpandedFolders;
     });
+  };
+
+  const handleFileClick = async (nodeData) => {
+    // Only handle file clicks, not folders
+    if (nodeData.nodeType === 'file') {
+      setIsModalOpen(true);
+      setIsLoadingSummary(true);
+      setFileSummary(null);
+
+      try {
+        // Extract repository info from the current URL
+        const urlObj = new URL(url);
+        const pathParts = urlObj.pathname.split('/').filter(Boolean);
+        const owner = pathParts[0];
+        const repo = pathParts[1];
+        
+        // Get the branch (default to 'main' if not specified)
+        let branch = 'main';
+        if (pathParts[2] === 'tree' && pathParts[3]) {
+          branch = pathParts[3];
+        }
+
+        // The nodeData.id contains the full file path from the repository root
+        // Format: owner/repo/branch/filepath
+        console.log('Full node data:', nodeData);
+        console.log('Node ID:', nodeData.id);
+        console.log('Node Label:', nodeData.label);
+        
+        // Use the node ID which contains the full path
+        const fullFilePath = nodeData.id;
+        const filePath = `${owner}/${repo}/${branch}/${fullFilePath}`;
+        const fileName = nodeData.label;
+        const fileType = getFileType(fileName);
+
+        console.log('Constructed file path:', filePath);
+
+        const summary = await summarizeFile(filePath, fileName, fileType);
+        setFileSummary(summary);
+      } catch (err) {
+        console.error("Error summarizing file:", err);
+        setError(`Failed to summarize file: ${err.message}`);
+      } finally {
+        setIsLoadingSummary(false);
+      }
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setFileSummary(null);
+    setIsLoadingSummary(false);
   };
 
   return (

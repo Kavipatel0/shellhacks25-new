@@ -14,7 +14,8 @@ import {
 import '@xyflow/react/dist/base.css';
 
 // Custom node component that applies different styles based on nodeType
-const CustomNode = ({ data, id, isConnectable, onToggleFolder, expandedFolders }) => {
+
+const CustomNode = ({ data, id, isConnectable, onNodeClick, onToggleFolder, expandedFolders }) => {
   const isFolder = data.nodeType === 'folder';
   const nodeClass = isFolder ? 'folder-node' : 'file-node';
   const isExpanded = expandedFolders && expandedFolders.has(id);
@@ -29,9 +30,18 @@ const CustomNode = ({ data, id, isConnectable, onToggleFolder, expandedFolders }
     });
   }
   
+  const handleClick = () => {
+    if (onNodeClick) {
+      // Pass both the data and the node id
+      onNodeClick({ ...data, id });
+    }
+  };
+  
   return (
     <div 
       className={`react-flow__node ${nodeClass} ${isFolder ? 'clickable-folder' : ''}`}
+      onClick={handleClick}
+      style={{ cursor: isFolder ? 'default' : 'pointer' }}
     >
       <Handle
         type="target"
