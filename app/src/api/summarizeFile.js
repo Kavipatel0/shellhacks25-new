@@ -4,7 +4,7 @@
 
 const API_BASE_URL = import.meta.env.DEV
   ? "http://localhost:8000"
-  : "https://shellhacks25-uy86.vercel.app/"; // Update this to match your backend URL
+  : "https://shellhacks25-uy86.vercel.app"; // Update this to match your backend URL
 
 /**
  * Summarize a file using the backend API
