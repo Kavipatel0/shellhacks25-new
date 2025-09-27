@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
+import { Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 import FlowGraph from "./components/FlowGraph";
 import FileSummaryModal from "./components/FileSummaryModal";
 import InfoCardsSection from "./components/InfoCardsSection";
+import CommitViewer from "./components/CommitViewer";
 import { getTree } from "./api/getTree";
 import { summarizeFile, getFileType } from "./api/summarizeFile";
 import { BackgroundBeams } from "./components/ui/shadcn-io/background-beams";
-import { Link } from "react-router-dom";
 
 
 
 
 
 
-function App() {
+function HomePage() {
   const [count, setCount] = useState(0);
   const [url, setUrl] = useState("");
   const [nodes, setNodes] = useState([]);
@@ -255,7 +256,7 @@ function App() {
   };
 
   return (
-    <div className="app-container relative overflow-hidden">
+    <div className="w-full h-full relative overflow-hidden">
       {/* Background Beams */}
       <BackgroundBeams className="fixed inset-0 z-0" />
       
@@ -279,14 +280,12 @@ function App() {
           </p>
           
           <div className="hero-actions">
-            <a 
-              href="/commits" 
-              target="_blank" 
-              rel="noopener noreferrer"
+            <Link 
+              to="/commits" 
               className="commit-viewer-link"
             >
               📝 View Commit History
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -373,6 +372,15 @@ function App() {
         <p className="footer-text">Project By: Kavi Patel, Stanley Ke, Arnav Bagmar, Hieu Nguyen</p>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/commits" element={<CommitViewer />} />
+    </Routes>
   );
 }
 
