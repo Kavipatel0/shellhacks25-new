@@ -19,7 +19,8 @@ import CommitHistoryDropdown from './CommitHistoryDropdown';
 
 const CustomNode = ({ data, id, isConnectable, onNodeClick, onToggleFolder, expandedFolders, isNodeHighlighted }) => {
   const isFolder = data.nodeType === 'folder';
-  const nodeClass = isFolder ? 'folder-node' : 'file-node';
+  const isRoot = data.nodeType === 'root';
+  const nodeClass = isRoot ? 'root-node' : (isFolder ? 'folder-node' : 'file-node');
   const isExpanded = expandedFolders && expandedFolders.has(id);
   const highlighted = isNodeHighlighted ? isNodeHighlighted(id) : false;
   
@@ -34,8 +35,8 @@ const CustomNode = ({ data, id, isConnectable, onNodeClick, onToggleFolder, expa
   }
   
   const handleClick = () => {
-    if (onNodeClick) {
-      // Pass both the data and the node id
+    if (onNodeClick && !isRoot) {
+      // Pass both the data and the node id (but not for root node)
       onNodeClick({ ...data, id });
     }
   };
@@ -44,7 +45,7 @@ const CustomNode = ({ data, id, isConnectable, onNodeClick, onToggleFolder, expa
     <div 
       className={`react-flow__node ${nodeClass} ${isFolder ? 'clickable-folder' : ''} ${highlighted ? 'highlighted-node' : ''}`}
       onClick={handleClick}
-      style={{ cursor: isFolder ? 'default' : 'pointer' }}
+      style={{ cursor: isRoot ? 'default' : (isFolder ? 'default' : 'pointer') }}
     >
       <Handle
         type="target"
@@ -52,7 +53,7 @@ const CustomNode = ({ data, id, isConnectable, onNodeClick, onToggleFolder, expa
         isConnectable={isConnectable}
         className="w-3 h-3 !bg-white !border-2 !border-gray-400"
       />
-      {isFolder && (
+      {isFolder && !isRoot && (
         <div className="folder-icon-container">
           <div className="folder-icon"></div>
           <div className={`expand-indicator ${isExpanded ? 'expanded' : 'collapsed'}`}>

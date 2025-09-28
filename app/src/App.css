@@ -495,6 +495,10 @@ body {
   border: 2px solid transparent;
 }
 
+.root-legend {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
 .folder-legend {
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
 }
@@ -815,6 +819,19 @@ body {
 }
 
 /* File and Folder Differentiation with Gradient Colors */
+.root-node {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border: 3px solid #047857 !important;
+  color: white !important;
+  font-weight: bold !important;
+  font-size: 14px !important;
+}
+
+.root-node:hover {
+  border-color: #047857 !important;
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4) !important;
+}
+
 .folder-node {
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
   border: 2px solid #1e40af !important;

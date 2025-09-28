@@ -116,10 +116,10 @@ function HomePage() {
   };
 
   // Function to fetch commit history
-  const fetchCommitHistory = async (repoUrl) => {
+  const fetchCommitHistory = async (repoUrl, limit = 100) => {
     setIsLoadingCommits(true);
     try {
-      const commitHistory = await getCommitHistory(repoUrl);
+      const commitHistory = await getCommitHistory(repoUrl, limit);
       return commitHistory;
     } catch (err) {
       console.error("Error fetching commit history:", err);
@@ -164,22 +164,42 @@ function HomePage() {
 
     allNodes.forEach(node => {
       const isFolder = node.data.nodeType === 'folder';
+      const isRoot = node.data.nodeType === 'root';
       const parts = node.id.split('/');
       const parentPath = parts.length > 1 ? parts.slice(0, -1).join('/') : null;
       
-      if (isFolder) {
+      if (isRoot) {
+        // Always show root node
+        console.log('Adding root node to visible:', node.id);
+        visibleNodeIds.add(node.id);
+        visibleNodes.push(node);
+      } else if (isFolder) {
         // Always show all folders
         console.log('Adding folder to visible:', node.id);
         visibleNodeIds.add(node.id);
         visibleNodes.push(node);
       } else {
-        // For files, only show if their immediate parent folder is expanded
-        if (parentPath && expandedFolders.has(parentPath)) {
-          console.log('Adding file to visible (parent expanded):', node.id, 'parent:', parentPath);
+        // For files, show if:
+        // 1. They are in the root directory (no parent path) and root is expanded, OR
+        // 2. Their immediate parent folder is expanded
+        const isRootLevel = !parentPath; // This means the file is directly in root (no '/' in the path)
+        const shouldShow = (isRootLevel && expandedFolders.has('root')) || (!isRootLevel && parentPath && expandedFolders.has(parentPath));
+        
+        console.log('File visibility check:', {
+          nodeId: node.id,
+          isRootLevel,
+          parentPath,
+          rootExpanded: expandedFolders.has('root'),
+          parentExpanded: parentPath ? expandedFolders.has(parentPath) : false,
+          shouldShow
+        });
+        
+        if (shouldShow) {
+          console.log('Adding file to visible:', node.id, 'parent:', parentPath || 'root');
           visibleNodeIds.add(node.id);
           visibleNodes.push(node);
         } else {
-          console.log('Hiding file (parent not expanded):', node.id, 'parent:', parentPath);
+          console.log('Hiding file (parent not expanded):', node.id, 'parent:', parentPath || 'root');
         }
       }
     });
@@ -220,15 +240,17 @@ function HomePage() {
       // Save repository to localStorage
       saveRepository(targetUrl);
       
-      // Initially show all folders but no files
-      const { visibleNodes, visibleEdges } = getVisibleNodesAndEdges(newNodes, newEdges, new Set());
+      // Initially show root node and all folders, plus root-level files
+      const initialExpandedFolders = new Set(['root']); // Root is expanded by default
+      setExpandedFolders(initialExpandedFolders); // Set the state
+      const { visibleNodes, visibleEdges } = getVisibleNodesAndEdges(newNodes, newEdges, initialExpandedFolders);
       setNodes(visibleNodes);
       setEdges(visibleEdges);
       
       // Try to fetch commit history separately (don't fail the whole operation if this fails)
       try {
         console.log('About to fetch commit history for:', targetUrl);
-        const commitHistory = await fetchCommitHistory(targetUrl);
+        const commitHistory = await fetchCommitHistory(targetUrl, 100);
         console.log('Commit history received:', commitHistory);
         setCommits(commitHistory);
       } catch (commitErr) {
@@ -271,6 +293,12 @@ function HomePage() {
     console.log('=== toggleFolder called ===');
     console.log('Toggling folder:', folderPath);
     console.log('Current expanded folders:', Array.from(expandedFolders));
+    
+    // Don't allow collapsing the root node
+    if (folderPath === 'root') {
+      console.log('Root node cannot be collapsed');
+      return;
+    }
     
     setExpandedFolders(prevExpanded => {
       console.log('setExpandedFolders callback - prevExpanded:', Array.from(prevExpanded));
@@ -553,6 +581,10 @@ function HomePage() {
           <div className="graph-section">
             {/* Legend */}
             <div className="graph-legend">
+              <div className="legend-item">
+                <div className="legend-color root-legend"></div>
+                <span className="legend-text">Repository Root</span>
+              </div>
               <div className="legend-item">
                 <div className="legend-color folder-legend"></div>
                 <span className="legend-text">Folder</span>

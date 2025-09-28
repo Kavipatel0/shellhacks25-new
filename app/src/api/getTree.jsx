@@ -43,7 +43,7 @@ function trimTreeEntries(tree) {
   return tree.filter(item => item.path && item.path !== '.');
 }
 
-function buildNodesAndEdges(tree) {
+function buildNodesAndEdges(tree, repoName = 'Repository') {
   // Intelligent hierarchical layout for nodes - top to bottom tree structure
   // Each node: id = full path, label with icon (📁 for tree, 📄 for blob)
   // Edges connect parent folder to child
@@ -65,6 +65,16 @@ function buildNodesAndEdges(tree) {
     parentToChildren[parent].push(item.path);
   });
 
+  // Add root directory node
+  const rootNodeId = 'root';
+  nodeIds.add(rootNodeId);
+  pathToItem[rootNodeId] = { path: rootNodeId, type: 'tree' };
+  if (!parentToChildren[null]) parentToChildren[null] = [];
+  parentToChildren[null].forEach(childPath => {
+    if (!parentToChildren[rootNodeId]) parentToChildren[rootNodeId] = [];
+    parentToChildren[rootNodeId].push(childPath);
+  });
+
   // Sort children: folders first, then files, then alphabetical
   function sortChildren(paths) {
     return paths.slice().sort((a, b) => {
@@ -83,22 +93,40 @@ function buildNodesAndEdges(tree) {
   const positions = {};
   const depthCounts = {};
   
-  // First pass: count items at each depth
+  // First pass: count items at each depth (including root)
+  depthCounts[0] = 1; // Root node at depth 0
   tree.forEach(item => {
     const parts = item.path.split('/');
-    const depth = parts.length - 1;
+    const depth = parts.length; // Adjusted since root is now at depth 0
     depthCounts[depth] = (depthCounts[depth] || 0) + 1;
   });
   
   // Second pass: assign positions
   const depthRows = {};
+  
+  // Position root node at the top
+  positions[rootNodeId] = { x: 0, y: 0 };
+  depthRows[0] = 1;
+  
+  // Position all other items
   tree.forEach(item => {
     const parts = item.path.split('/');
-    const depth = parts.length - 1;
+    const depth = parts.length; // Adjusted since root is now at depth 0
     const y = (depthRows[depth] || 0) * yGap;
     const x = depth * xGap;
     positions[item.path] = { x, y };
     depthRows[depth] = (depthRows[depth] || 0) + 1;
+  });
+
+  // Create root node
+  nodes.push({
+    id: rootNodeId,
+    data: { 
+      label: repoName,
+      nodeType: 'root'
+    },
+    position: positions[rootNodeId],
+    type: 'default',
   });
 
   // Create nodes with computed positions
@@ -122,7 +150,23 @@ function buildNodesAndEdges(tree) {
   tree.forEach(item => {
     const id = item.path;
     const parts = id.split('/');
-    if (parts.length > 1) {
+    
+    if (parts.length === 1) {
+      // Top-level items connect to root
+      const isCurrentFolder = item.type === 'tree';
+      const edgeType = isCurrentFolder ? 'root-to-folder' : 'root-to-file';
+      
+      edges.push({
+        id: `${rootNodeId}-${id}`,
+        source: rootNodeId,
+        target: id,
+        type: 'default',
+        data: {
+          edgeType: edgeType
+        }
+      });
+    } else if (parts.length > 1) {
+      // Sub-level items connect to their parent folder
       const parentPath = parts.slice(0, -1).join('/');
       if (nodeIds.has(parentPath)) {
         const parentItem = pathToItem[parentPath];
@@ -204,7 +248,7 @@ async function getTree(repoUrl, commitSha = null) {
     const treeApiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${treeRef}?recursive=1`;
     const treeData = await fetchJSON(treeApiUrl);
     const tree = trimTreeEntries(treeData.tree);
-    return buildNodesAndEdges(tree);
+    return buildNodesAndEdges(tree, repo);
   } catch (error) {
     console.warn(`GitHub API failed: ${error.message}`);
     // Re-throw the error so the user knows what happened

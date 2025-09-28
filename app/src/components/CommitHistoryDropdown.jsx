@@ -82,7 +82,7 @@ export default function CommitHistoryDropdown({ commits, onCommitSelect, isLoadi
       {isOpen && (
         <div className="commit-history-list">
           <div className="commit-list-header">
-            <h4>Commit History (Last 20)</h4>
+            <h4>Commit History (Last 100)</h4>
             <button 
               className="close-button"
               onClick={() => setIsOpen(false)}

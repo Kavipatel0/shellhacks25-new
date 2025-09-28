@@ -27,7 +27,7 @@ export default function FlowPage() {
       // Try to fetch commit history separately (don't fail the whole operation if this fails)
       try {
         console.log('About to fetch commit history for:', url);
-        const commitHistory = await fetchCommitHistory(url);
+        const commitHistory = await fetchCommitHistory(url, 100);
         console.log('Commit history received:', commitHistory);
         setCommits(commitHistory);
       } catch (commitErr) {
@@ -44,10 +44,10 @@ export default function FlowPage() {
     }
   };
 
-  const fetchCommitHistory = async (repoUrl) => {
+  const fetchCommitHistory = async (repoUrl, limit = 100) => {
     setIsLoadingCommits(true);
     try {
-      const commitHistory = await getCommitHistory(repoUrl);
+      const commitHistory = await getCommitHistory(repoUrl, limit);
       return commitHistory;
     } catch (err) {
       console.error("Error fetching commit history:", err);
