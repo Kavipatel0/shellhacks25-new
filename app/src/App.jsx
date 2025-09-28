@@ -532,14 +532,14 @@ function HomePage() {
             AI-powered intelligent insights, smart summaries, and code analysis to help you understand a codebase with confidence.
           </p>
           
-          <div className="hero-actions">
+          {/* <div className="hero-actions">
             <Link 
               to="/commits" 
               className="commit-viewer-link"
             >
               📝 View Commit History
             </Link>
-          </div>
+          </div> */}
         </div>
 
         {/* Input Section */}
