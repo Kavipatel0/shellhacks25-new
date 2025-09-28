@@ -8,6 +8,7 @@ import CommitViewer from "./components/CommitViewer";
 import CodebaseAssistant from "./components/CodebaseAssistant";
 import { getTree } from "./api/getTree";
 import { summarizeFile, getFileType } from "./api/summarizeFile";
+import { getCommitHistory } from "./api/getCommitHistory";
 import { BackgroundBeams } from "./components/ui/shadcn-io/background-beams";
 
 
@@ -32,6 +33,11 @@ function HomePage() {
   const [previousRepos, setPreviousRepos] = useState([]);
   const [selectedFilePath, setSelectedFilePath] = useState(null);
   const [highlightedPath, setHighlightedPath] = useState([]);
+  
+  // Commit-related state
+  const [commits, setCommits] = useState([]);
+  const [isLoadingCommits, setIsLoadingCommits] = useState(false);
+  const [currentCommit, setCurrentCommit] = useState(null);
 
   // Load previous repositories from localStorage on component mount
   useEffect(() => {
@@ -109,6 +115,43 @@ function HomePage() {
     handleSubmit({ preventDefault: () => {} }, repoUrl);
   };
 
+  // Function to fetch commit history
+  const fetchCommitHistory = async (repoUrl) => {
+    setIsLoadingCommits(true);
+    try {
+      const commitHistory = await getCommitHistory(repoUrl);
+      return commitHistory;
+    } catch (err) {
+      console.error("Error fetching commit history:", err);
+      throw err; // Re-throw to be handled by the caller
+    } finally {
+      setIsLoadingCommits(false);
+    }
+  };
+
+  // Function to handle commit selection
+  const handleCommitSelect = async (commit) => {
+    setCurrentCommit(commit);
+    setError("");
+    
+    try {
+      const { initialNodes: newNodes, initialEdges: newEdges } = await getTree(
+        url,
+        commit.sha
+      );
+      setAllNodes(newNodes);
+      setAllEdges(newEdges);
+      
+      // Update visible nodes and edges
+      const { visibleNodes, visibleEdges } = getVisibleNodesAndEdges(newNodes, newEdges, expandedFolders);
+      setNodes(visibleNodes);
+      setEdges(visibleEdges);
+    } catch (err) {
+      setError(err.message || String(err));
+      console.error("Error fetching repository at commit:", err);
+    }
+  };
+
   // Function to filter nodes based on expanded folders
   const getVisibleNodesAndEdges = (allNodes, allEdges, expandedFolders) => {
     console.log('=== getVisibleNodesAndEdges called ===');
@@ -166,6 +209,9 @@ function HomePage() {
     setError(""); // Clear previous errors
     setExpandedFolders(new Set()); // Reset expanded folders
     setHighlightedPath([]); // Clear highlighted path
+    setCommits([]); // Clear previous commits
+    setCurrentCommit(null); // Clear current commit
+    
     try {
       const { initialNodes: newNodes, initialEdges: newEdges } = await getTree(targetUrl);
       setAllNodes(newNodes);
@@ -178,6 +224,21 @@ function HomePage() {
       const { visibleNodes, visibleEdges } = getVisibleNodesAndEdges(newNodes, newEdges, new Set());
       setNodes(visibleNodes);
       setEdges(visibleEdges);
+      
+      // Try to fetch commit history separately (don't fail the whole operation if this fails)
+      try {
+        console.log('About to fetch commit history for:', targetUrl);
+        const commitHistory = await fetchCommitHistory(targetUrl);
+        console.log('Commit history received:', commitHistory);
+        setCommits(commitHistory);
+      } catch (commitErr) {
+        console.error("Failed to fetch commit history:", commitErr);
+        setCommits([]);
+        // Show a warning but don't block the main functionality
+        if (!error) {
+          setError(`Warning: Could not load commit history. ${commitErr.message}`);
+        }
+      }
     } catch (err) {
       setError(err.message);
       console.error("Error fetching repository:", err);
@@ -512,6 +573,10 @@ function HomePage() {
               isNodeHighlighted={isNodeHighlighted}
               isEdgeHighlighted={isEdgeHighlighted}
               highlightedPath={highlightedPath}
+              commits={commits}
+              onCommitSelect={handleCommitSelect}
+              isLoadingCommits={isLoadingCommits}
+              currentCommit={currentCommit}
             />
           </div>
         )}

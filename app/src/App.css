@@ -515,6 +515,226 @@ body {
   border-radius: 12px;
   overflow: hidden;
   background: #1a1a1a;
+  position: relative;
+}
+
+/* Commit History Overlay */
+.commit-history-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  pointer-events: auto;
+}
+
+/* Commit History Dropdown Styles */
+.commit-history-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.commit-history-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  pointer-events: auto;
+}
+
+.commit-history-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.commit-history-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.commit-history-button .button-text {
+  flex: 1;
+  text-align: left;
+  font-weight: 500;
+}
+
+.commit-history-button .dropdown-arrow {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.commit-history-list {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 10001;
+  min-width: 400px;
+  max-width: 500px;
+  pointer-events: auto;
+}
+
+.commit-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.commit-list-header h4 {
+  margin: 0;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.commit-list-header .close-button {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.commit-list-header .close-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.commit-list-scrollable {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.commit-item {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.commit-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.commit-item.selected {
+  background: rgba(59, 130, 246, 0.2);
+  border-left: 3px solid #3b82f6;
+}
+
+.commit-item:last-child {
+  border-bottom: none;
+}
+
+.commit-sha {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  color: #3b82f6;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.commit-message {
+  color: white;
+  font-size: 14px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.commit-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #888;
+}
+
+.commit-author {
+  font-weight: 500;
+}
+
+.commit-actions {
+  margin-top: 8px;
+}
+
+.commit-github-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.commit-github-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.loading-commits {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 20px;
+  color: #888;
+}
+
+.loading-commits .spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.no-commits {
+  padding: 40px 20px;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+}
+
+/* Custom scrollbar for commit list */
+.commit-list-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.commit-list-scrollable::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.commit-list-scrollable::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.commit-list-scrollable::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* Glowing path animation */

@@ -17,23 +17,19 @@ async function fetchJSON(url) {
   return await response.json();
 }
 
-function parseGitHubUrl(input) {
+function parseRepoInput(input) {
+  // Accept full URL or owner/repo
   try {
-    console.log('=== parseGitHubUrl called ===');
-    console.log('Input URL:', input);
-    const u = new URL(input.trim());
-    console.log('Parsed URL:', u);
-    const parts = u.pathname.replace(/^\/+/, "").split("/");
-    console.log('URL parts:', parts);
-    const [owner, repo, maybeTree, ref, ...rest] = parts;
-    const subpath = maybeTree === "tree" && rest.length ? rest.join("/") : "";
-    console.log('Parsed result:', { owner, repo, ref: maybeTree === "tree" ? ref : undefined, subpath });
-    return { owner, repo, ref: maybeTree === "tree" ? ref : undefined, subpath };
-  } catch (error) {
-    console.error('parseGitHubUrl error:', error);
-    console.error('Input that failed:', input);
-    throw new Error("Invalid GitHub repository URL");
+    const url = new URL(input);
+    // github.com/owner/repo
+    const parts = url.pathname.split("/").filter(Boolean);
+    if (parts.length >= 2) return { owner: parts[0], repo: parts[1] };
+  } catch {
+    // not a url
   }
+  const parts = input.split("/").filter(Boolean);
+  if (parts.length === 2) return { owner: parts[0], repo: parts[1] };
+  return null;
 }
 
 async function getDefaultBranch(owner, repo) {
@@ -189,16 +185,23 @@ function getSampleTreeData() {
   ];
 }
 
-async function getTree(repoUrl) {
-  const { owner, repo, ref } = parseGitHubUrl(repoUrl);
-  let branch = ref;
-  
+async function getTree(repoUrl, commitSha = null) {
   try {
-    if (!branch) {
-      const defaultBranch = await getDefaultBranch(owner, repo);
-      branch = defaultBranch;
+    const parsed = parseRepoInput(repoUrl.trim());
+    if (!parsed) {
+      throw new Error("Enter owner/repo or full GitHub URL");
     }
-    const treeApiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
+
+    const { owner, repo } = parsed;
+    
+    // Use commit SHA if provided, otherwise use default branch
+    let treeRef = commitSha;
+    if (!treeRef) {
+      const defaultBranch = await getDefaultBranch(owner, repo);
+      treeRef = defaultBranch;
+    }
+    
+    const treeApiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${treeRef}?recursive=1`;
     const treeData = await fetchJSON(treeApiUrl);
     const tree = trimTreeEntries(treeData.tree);
     return buildNodesAndEdges(tree);

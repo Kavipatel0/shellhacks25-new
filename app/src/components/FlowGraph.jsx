@@ -13,6 +13,7 @@ import {
   useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
+import CommitHistoryDropdown from './CommitHistoryDropdown';
 
 // Custom node component that applies different styles based on nodeType
 
@@ -114,7 +115,21 @@ function AutoFitView({ nodes }) {
   return null;
 }
 
-export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, expandedFolders, onFileClick, selectedFilePath, isNodeHighlighted, isEdgeHighlighted, highlightedPath = [] }) {
+export default function FlowGraph({ 
+  initialNodes, 
+  initialEdges, 
+  onToggleFolder, 
+  expandedFolders, 
+  onFileClick, 
+  selectedFilePath, 
+  isNodeHighlighted, 
+  isEdgeHighlighted, 
+  highlightedPath = [],
+  commits = [],
+  onCommitSelect,
+  isLoadingCommits = false,
+  currentCommit = null
+}) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges || []);
 
@@ -180,6 +195,16 @@ export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, 
 
   return (
     <div className="flow-graph-container">
+      {/* Commit History Dropdown positioned at top right - outside ReactFlow */}
+      <div className="commit-history-overlay">
+        <CommitHistoryDropdown
+          commits={commits}
+          onCommitSelect={onCommitSelect}
+          isLoading={isLoadingCommits}
+          currentCommit={currentCommit}
+        />
+      </div>
+      
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -190,6 +215,8 @@ export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, 
         fitView
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        preventScrolling={false}
+        deleteKeyCode={null}
       >
         <AutoFitView nodes={nodes} />
         <Background 
