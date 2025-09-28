@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const FileSummaryModal = ({ isOpen, onClose, fileSummary, isLoading }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
+  const [showFileContent, setShowFileContent] = useState(false);
 
   const parseSummary = (summary) => {
     if (!summary) return { purpose: '', relationships: [] };
@@ -21,6 +24,87 @@ const FileSummaryModal = ({ isOpen, onClose, fileSummary, isLoading }) => {
       .filter(item => item.length > 0);
 
     return { purpose, relationships };
+  };
+
+  // Map file types to syntax highlighter languages
+  const getLanguageFromFileType = (fileType) => {
+    const typeMap = {
+      'JavaScript': 'javascript',
+      'React JSX': 'jsx',
+      'TypeScript': 'typescript',
+      'React TypeScript': 'tsx',
+      'Python': 'python',
+      'Java': 'java',
+      'C++': 'cpp',
+      'C': 'c',
+      'CSS': 'css',
+      'HTML': 'html',
+      'JSON': 'json',
+      'Markdown': 'markdown',
+      'YAML': 'yaml',
+      'XML': 'xml',
+      'PHP': 'php',
+      'Ruby': 'ruby',
+      'Go': 'go',
+      'Rust': 'rust',
+      'Swift': 'swift',
+      'Kotlin': 'kotlin',
+      'Scala': 'scala',
+      'Shell Script': 'bash',
+      'SQL': 'sql',
+      'Docker': 'dockerfile',
+      'Dockerfile': 'dockerfile',
+    };
+    return typeMap[fileType] || 'text';
+  };
+
+  // Get file extension from filename for better language detection
+  const getLanguageFromFileName = (fileName) => {
+    const extension = fileName.split('.').pop()?.toLowerCase();
+    const extensionMap = {
+      'js': 'javascript',
+      'jsx': 'jsx',
+      'ts': 'typescript',
+      'tsx': 'tsx',
+      'py': 'python',
+      'java': 'java',
+      'cpp': 'cpp',
+      'c': 'c',
+      'css': 'css',
+      'html': 'html',
+      'htm': 'html',
+      'json': 'json',
+      'md': 'markdown',
+      'yml': 'yaml',
+      'yaml': 'yaml',
+      'xml': 'xml',
+      'php': 'php',
+      'rb': 'ruby',
+      'go': 'go',
+      'rs': 'rust',
+      'swift': 'swift',
+      'kt': 'kotlin',
+      'scala': 'scala',
+      'sh': 'bash',
+      'bash': 'bash',
+      'sql': 'sql',
+      'dockerfile': 'dockerfile',
+      'txt': 'text',
+      'log': 'text',
+    };
+    return extensionMap[extension] || 'text';
+  };
+
+  // Determine the best language for syntax highlighting
+  const getSyntaxLanguage = () => {
+    if (!fileSummary) return 'text';
+    
+    // First try to get language from file type
+    const typeLanguage = getLanguageFromFileType(fileSummary.fileType);
+    if (typeLanguage !== 'text') return typeLanguage;
+    
+    // Fallback to filename extension
+    return getLanguageFromFileName(fileSummary.fileName);
   };
 
   useEffect(() => {
@@ -267,6 +351,106 @@ const FileSummaryModal = ({ isOpen, onClose, fileSummary, isLoading }) => {
             </div>
           ) : fileSummary ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+              {/* File Content Display */}
+              {fileSummary.fileContent && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <div style={{
+                        padding: '8px',
+                        backgroundColor: '#fef3c7',
+                        borderRadius: '8px'
+                      }}>
+                        <svg width="20" height="20" style={{ color: '#d97706' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                        </svg>
+                      </div>
+                      <h3 style={{
+                        fontSize: '20px',
+                        fontWeight: 'bold',
+                        color: '#1f2937',
+                        margin: 0
+                      }}>File Contents</h3>
+                    </div>
+                    <button
+                      onClick={() => setShowFileContent(!showFileContent)}
+                      className={`file-content-toggle ${showFileContent ? 'active' : ''}`}
+                      style={{
+                        background: showFileContent ? '#3b82f6' : '#f3f4f6',
+                        color: showFileContent ? 'white' : '#374151',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '8px 16px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      {showFileContent ? (
+                        <>
+                          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                          Hide Code
+                        </>
+                      ) : (
+                        <>
+                          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                          Show Code
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  {showFileContent && (
+                    <div style={{
+                      background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+                      borderRadius: '12px',
+                      padding: '24px',
+                      border: '1px solid #f59e0b'
+                    }}>
+                      <div className="syntax-highlighter-container" style={{
+                        borderRadius: '8px',
+                        overflow: 'hidden',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                      }}>
+                        <SyntaxHighlighter
+                          language={getSyntaxLanguage()}
+                          style={tomorrow}
+                          showLineNumbers={true}
+                          wrapLines={true}
+                          wrapLongLines={true}
+                          customStyle={{
+                            margin: 0,
+                            maxHeight: '400px',
+                            overflow: 'auto',
+                            background: '#1e1e1e !important',
+                            fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace !important',
+                            fontSize: '13px !important',
+                            lineHeight: '1.5 !important'
+                          }}
+                        >
+                          {fileSummary.fileContent}
+                        </SyntaxHighlighter>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* File Purpose Section */}
               {purpose && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

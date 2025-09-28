@@ -322,7 +322,8 @@ def summarize_file(body: FileSummaryBody):
             "fileName": body.fileName,
             "fileType": body.fileType,
             "summary": response.text,
-            "filePath": body.filePath
+            "filePath": body.filePath,
+            "fileContent": code  # Add file contents to response
         }
         
     except requests.RequestException as e:
