@@ -143,6 +143,177 @@ body {
   backdrop-filter: blur(10px);
 }
 
+/* Codebase Assistant Section */
+.codebase-assistant-section {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: #2d2d2d;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.assistant-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.assistant-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.assistant-subtitle {
+  font-size: 1rem;
+  color: #a0a0a0;
+  margin: 0;
+}
+
+.question-form {
+  margin-bottom: 2rem;
+}
+
+.input-container {
+  display: flex;
+  gap: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.question-input {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  border: 2px solid #404040;
+  border-radius: 12px;
+  background: #1a1a1a;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.question-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.question-input::placeholder {
+  color: #666;
+}
+
+.question-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ask-button {
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ask-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+.ask-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.response-container {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #404040;
+}
+
+.response-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.response-header h4 {
+  color: white;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.speaking-indicator {
+  color: #3b82f6;
+  font-size: 0.9rem;
+  font-weight: normal;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.response-controls {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.subtitles-button,
+.stop-button {
+  padding: 0.5rem 1rem;
+  background: #404040;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subtitles-button:hover,
+.stop-button:hover {
+  background: #555;
+}
+
+.stop-button {
+  background: #ef4444;
+}
+
+.stop-button:hover {
+  background: #dc2626;
+}
+
+.response-text {
+  color: #e0e0e0;
+  line-height: 1.6;
+  font-size: 1rem;
+  background: #0f0f0f;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
 /* Previous Repositories Section */
 .previous-repos-section {
   margin-top: 2rem;
@@ -257,6 +428,48 @@ body {
   border-radius: 12px;
   overflow: hidden;
   background: #1a1a1a;
+}
+
+/* Glowing path animation */
+@keyframes glow-pulse {
+  0% {
+    stroke: #60a5fa;
+    stroke-width: 3;
+    opacity: 0.6;
+  }
+  50% {
+    stroke: #3b82f6;
+    stroke-width: 4;
+    opacity: 1;
+  }
+  100% {
+    stroke: #60a5fa;
+    stroke-width: 3;
+    opacity: 0.6;
+  }
+}
+
+@keyframes glow-traverse {
+  0% {
+    stroke-dashoffset: 100;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.react-flow__edge-path.highlighted-path {
+  stroke: #3b82f6;
+  stroke-width: 3;
+  stroke-dasharray: 10 5;
+  animation: glow-pulse 2s ease-in-out infinite, glow-traverse 3s ease-in-out;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+}
+
+.react-flow__node.highlighted-node {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  border: 2px solid #3b82f6;
+  animation: glow-pulse 2s ease-in-out infinite;
 }
 
 /* Modern React Flow Styling */
