@@ -128,18 +128,35 @@ export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, 
 
   useEffect(() => {
     if (initialNodes) {
-      // Map all nodes to use the custom type
+      // Map all nodes to use the custom type and add highlighting
       const nodesWithCustomType = initialNodes.map(node => ({
         ...node,
-        type: 'custom'
+        type: 'custom',
+        className: highlightedPath.includes(node.id) ? 'highlighted-node' : ''
       }));
       setNodes(nodesWithCustomType);
     }
-  }, [initialNodes, setNodes]);
+  }, [initialNodes, setNodes, highlightedPath]);
 
   useEffect(() => {
-    setEdges(initialEdges || []);
-  }, [initialEdges, setEdges]);
+    if (initialEdges) {
+      // Add highlighting to edges in the path
+      const edgesWithHighlighting = initialEdges.map(edge => {
+        const isInPath = highlightedPath.some((nodeId, index) => {
+          if (index === 0) return false; // Skip root node
+          const prevNodeId = highlightedPath[index - 1];
+          return edge.source === prevNodeId && edge.target === nodeId;
+        });
+        
+        return {
+          ...edge,
+          className: isInPath ? 'highlighted-path' : '',
+          style: isInPath ? { stroke: '#3b82f6', strokeWidth: 3 } : {}
+        };
+      });
+      setEdges(edgesWithHighlighting);
+    }
+  }, [initialEdges, setEdges, highlightedPath]);
 
   const onConnect = useCallback(
     (params) => setEdges((els) => addEdge(params, els)),
