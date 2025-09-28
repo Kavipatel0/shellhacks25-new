@@ -1,19 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { askCodebase, speakText, stopSpeech } from '../api/codebaseAssistant';
 
 const CodebaseAssistant = ({ repoUrl, nodes = [], edges = [] }) => {
   const [question, setQuestion] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState('');
+  const [displayedText, setDisplayedText] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [showSubtitles, setShowSubtitles] = useState(true); // Auto-show subtitles
+  const [isTyping, setIsTyping] = useState(false);
+  const [canSpeak, setCanSpeak] = useState(false); // Whether speech is available
+  const typewriterIntervalRef = useRef(null);
 
-  // Cleanup speech synthesis on component unmount
+  // Typewriter effect function
+  const startTypewriterEffect = (text, onComplete) => {
+    if (typewriterIntervalRef.current) {
+      clearInterval(typewriterIntervalRef.current);
+    }
+    
+    setDisplayedText('');
+    setIsTyping(true);
+    
+    let currentIndex = 0;
+    const typingSpeed = 30; // milliseconds per character
+    
+    typewriterIntervalRef.current = setInterval(() => {
+      if (currentIndex < text.length) {
+        setDisplayedText(text.substring(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        clearInterval(typewriterIntervalRef.current);
+        setIsTyping(false);
+        if (onComplete) onComplete();
+      }
+    }, typingSpeed);
+  };
+
+  // Cleanup speech synthesis and typewriter on component unmount
   useEffect(() => {
     return () => {
-      console.log('🧹 CodebaseAssistant unmounting - stopping any ongoing speech');
+      console.log('🧹 CodebaseAssistant unmounting - stopping any ongoing speech and typewriter');
       stopSpeech();
       setIsPlaying(false);
+      setCanSpeak(false);
+      if (typewriterIntervalRef.current) {
+        clearInterval(typewriterIntervalRef.current);
+      }
     };
   }, []);
 
@@ -23,8 +55,15 @@ const CodebaseAssistant = ({ repoUrl, nodes = [], edges = [] }) => {
 
     setIsLoading(true);
     setResponse('');
+    setDisplayedText('');
+    setCanSpeak(false);
     setShowSubtitles(true); // Auto-show subtitles
     stopSpeech(); // Stop any ongoing speech
+    
+    // Clear any existing typewriter effect
+    if (typewriterIntervalRef.current) {
+      clearInterval(typewriterIntervalRef.current);
+    }
     
     try {
       console.log('🤖 Sending question to AI...');
@@ -41,40 +80,47 @@ const CodebaseAssistant = ({ repoUrl, nodes = [], edges = [] }) => {
       
       setResponse(answer);
       setIsLoading(false);
+      setCanSpeak(true); // Enable speech capability
       
-      // Automatically start speaking the response
-      console.log('🔊 Starting automatic speech...');
+      // Start typewriter effect only
+      console.log('⌨️ Starting typewriter effect...');
+      startTypewriterEffect(answer, () => {
+        console.log('✅ Typewriter effect completed');
+      });
+      
+    } catch (error) {
+      console.error('Error getting response:', error);
+      const errorMessage = 'Sorry, there was an error processing your question. Please try again.';
+      setResponse(errorMessage);
+      setDisplayedText(errorMessage);
+      setIsLoading(false);
+      setIsPlaying(false);
+      setCanSpeak(false);
+    }
+  };
+
+  const toggleSpeech = async () => {
+    if (!response || !canSpeak) return;
+    
+    if (isPlaying) {
+      // Stop speech
+      stopSpeech();
+      setIsPlaying(false);
+      console.log('🔇 Speech stopped by user');
+    } else {
+      // Start speech
       setIsPlaying(true);
+      console.log('🔊 Starting speech...');
       
       try {
-        await speakText(answer);
+        await speakText(response);
         console.log('✅ Speech completed successfully');
         setIsPlaying(false);
       } catch (speechError) {
         console.error('❌ Speech error:', speechError);
         setIsPlaying(false);
-        // Continue even if speech fails
       }
-      
-    } catch (error) {
-      console.error('Error getting response:', error);
-      setResponse('Sorry, there was an error processing your question. Please try again.');
-      setIsLoading(false);
-      setIsPlaying(false);
     }
-  };
-
-  const handlePlayAudio = () => {
-    if (!response) return;
-    
-    setIsPlaying(true);
-    // TODO: Integrate with ElevenLabs TTS
-    console.log('🔊 Playing audio for:', response);
-    
-    // Simulate audio playback
-    setTimeout(() => {
-      setIsPlaying(false);
-    }, 3000);
   };
 
   return (
@@ -103,7 +149,11 @@ const CodebaseAssistant = ({ repoUrl, nodes = [], edges = [] }) => {
             className="ask-button"
             disabled={isLoading || !question.trim() || !repoUrl}
           >
-            {isLoading ? '🤔' : '❓'}
+            {isLoading ? (
+              <div className="loading-spinner"></div>
+            ) : (
+              '❓'
+            )}
             Ask
           </button>
         </div>
@@ -113,7 +163,9 @@ const CodebaseAssistant = ({ repoUrl, nodes = [], edges = [] }) => {
         <div className="response-container">
           <div className="response-header">
             <h4>
-              Codebase Assistant {isPlaying && <span className="speaking-indicator">🔊 Speaking...</span>}
+              Codebase Assistant 
+              {isPlaying && <span className="speaking-indicator">🔊 Speaking...</span>}
+              {isTyping && <span className="typing-indicator">⌨️ Typing...</span>}
             </h4>
             <div className="response-controls">
               <button 
@@ -122,16 +174,12 @@ const CodebaseAssistant = ({ repoUrl, nodes = [], edges = [] }) => {
               >
                 {showSubtitles ? '📝 Hide Text' : '📝 Show Text'}
               </button>
-              {isPlaying && (
+              {canSpeak && (
                 <button 
-                  onClick={() => { 
-                    stopSpeech(); 
-                    setIsPlaying(false);
-                    console.log('🔇 Stop button clicked - speech stopped');
-                  }}
-                  className="stop-button"
+                  onClick={toggleSpeech}
+                  className={`speech-toggle-button ${isPlaying ? 'stop' : 'play'}`}
                 >
-                  🔇 Stop
+                  {isPlaying ? '🔇 Stop Speaking' : '🔊 Start Speaking'}
                 </button>
               )}
             </div>
@@ -139,7 +187,8 @@ const CodebaseAssistant = ({ repoUrl, nodes = [], edges = [] }) => {
           
           {showSubtitles && (
             <div className="response-text">
-              {response}
+              {displayedText}
+              {isTyping && <span className="typing-cursor">|</span>}
             </div>
           )}
         </div>

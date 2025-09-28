@@ -306,6 +306,19 @@ body {
   animation: pulse 1.5s ease-in-out infinite;
 }
 
+.typing-indicator {
+  color: #10b981;
+  font-size: 0.9rem;
+  font-weight: normal;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.typing-cursor {
+  color: #3b82f6;
+  font-weight: bold;
+  animation: blink 1s infinite;
+}
+
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -315,13 +328,22 @@ body {
   }
 }
 
+@keyframes blink {
+  0%, 50% { 
+    opacity: 1; 
+  }
+  51%, 100% { 
+    opacity: 0; 
+  }
+}
+
 .response-controls {
   display: flex;
   gap: 0.75rem;
 }
 
 .subtitles-button,
-.stop-button {
+.speech-toggle-button {
   padding: 0.5rem 1rem;
   background: #404040;
   color: white;
@@ -336,16 +358,40 @@ body {
 }
 
 .subtitles-button:hover,
-.stop-button:hover {
+.speech-toggle-button:hover {
   background: #555;
 }
 
-.stop-button {
+.speech-toggle-button.play {
+  background: #10b981;
+}
+
+.speech-toggle-button.play:hover {
+  background: #059669;
+}
+
+.speech-toggle-button.stop {
   background: #ef4444;
 }
 
-.stop-button:hover {
+.speech-toggle-button.stop:hover {
   background: #dc2626;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .response-text {
