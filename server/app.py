@@ -29,7 +29,7 @@ app = FastAPI()
 # Add CORS middleware to allow frontend requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "https://shellhacks25.vercel.app"],  # Allow frontend ports
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "https://shellhacks25.vercel.app", "https://www.gitflow.work", "https://gitflow.work"],  # Allow frontend ports and custom domain
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
