@@ -114,7 +114,7 @@ function AutoFitView({ nodes }) {
   return null;
 }
 
-export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, expandedFolders, onFileClick, selectedFilePath, isNodeHighlighted, isEdgeHighlighted }) {
+export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, expandedFolders, onFileClick, selectedFilePath, isNodeHighlighted, isEdgeHighlighted, highlightedPath = [] }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges || []);
 
