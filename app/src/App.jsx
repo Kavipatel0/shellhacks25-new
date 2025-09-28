@@ -5,6 +5,7 @@ import FlowGraph from "./components/FlowGraph";
 import FileSummaryModal from "./components/FileSummaryModal";
 import InfoCardsSection from "./components/InfoCardsSection";
 import CommitViewer from "./components/CommitViewer";
+import CodebaseAssistant from "./components/CodebaseAssistant";
 import { getTree } from "./api/getTree";
 import { summarizeFile, getFileType } from "./api/summarizeFile";
 import { BackgroundBeams } from "./components/ui/shadcn-io/background-beams";
@@ -30,6 +31,7 @@ function HomePage() {
   const [allEdges, setAllEdges] = useState([]);
   const [previousRepos, setPreviousRepos] = useState([]);
   const [selectedFilePath, setSelectedFilePath] = useState(null);
+  const [highlightedPath, setHighlightedPath] = useState([]);
 
   // Load previous repositories from localStorage on component mount
   useEffect(() => {
@@ -163,6 +165,7 @@ function HomePage() {
     
     setError(""); // Clear previous errors
     setExpandedFolders(new Set()); // Reset expanded folders
+    setHighlightedPath([]); // Clear highlighted path
     try {
       const { initialNodes: newNodes, initialEdges: newEdges } = await getTree(targetUrl);
       setAllNodes(newNodes);
@@ -179,6 +182,27 @@ function HomePage() {
       setError(err.message);
       console.error("Error fetching repository:", err);
     }
+  };
+
+  // Function to find path from root to a specific file
+  const findPathToFile = (targetFileId, nodes, edges) => {
+    const path = [];
+    let currentId = targetFileId;
+    
+    // Build path backwards from target file to root
+    while (currentId) {
+      path.unshift(currentId);
+      
+      // Find the parent of current node
+      const parentEdge = edges.find(edge => edge.target === currentId);
+      if (parentEdge) {
+        currentId = parentEdge.source;
+      } else {
+        break; // Reached root or no parent found
+      }
+    }
+    
+    return path;
   };
 
   // Function to toggle folder expansion
@@ -207,6 +231,12 @@ function HomePage() {
     // Only handle file clicks, not folders
     if (nodeData.nodeType === 'file') {
       console.log('📱 Opening modal...');
+      
+      // Find and highlight the path to this file
+      const pathToFile = findPathToFile(nodeId, allNodes, allEdges);
+      console.log('🗺️ Path to file:', pathToFile);
+      setHighlightedPath(pathToFile);
+      
       setIsModalOpen(true);
       setIsLoadingSummary(true);
       setFileSummary(null);
@@ -261,6 +291,7 @@ function HomePage() {
     setFileSummary(null);
     setIsLoadingSummary(false);
     // Keep the selectedFilePath for highlighting - don't clear it
+    setHighlightedPath([]); // Clear the highlighted path
   };
 
   // Function to get the path from root to selected file
@@ -480,8 +511,18 @@ function HomePage() {
               selectedFilePath={selectedFilePath}
               isNodeHighlighted={isNodeHighlighted}
               isEdgeHighlighted={isEdgeHighlighted}
+              highlightedPath={highlightedPath}
             />
           </div>
+        )}
+
+        {/* Codebase Assistant Section */}
+        {nodes.length > 0 && (
+          <CodebaseAssistant 
+            repoUrl={url} 
+            nodes={nodes} 
+            edges={edges} 
+          />
         )}
 
         {/* Previous Repositories Section */}
