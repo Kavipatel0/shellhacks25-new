@@ -128,7 +128,7 @@ const FileSummaryModal = ({ isOpen, onClose, fileSummary, isLoading }) => {
         const timeout = setTimeout(() => {
           setDisplayedText(prev => prev + textToType[currentIndex]);
           setCurrentIndex(prev => prev + 1);
-        }, 5);
+        }, 8);
 
         return () => clearTimeout(timeout);
       } else {

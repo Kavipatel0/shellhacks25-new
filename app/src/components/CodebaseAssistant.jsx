@@ -22,7 +22,7 @@ const CodebaseAssistant = ({ repoUrl, nodes = [], edges = [] }) => {
     setIsTyping(true);
     
     let currentIndex = 0;
-    const typingSpeed = 30; // milliseconds per character
+    const typingSpeed = 8; // milliseconds per character
     
     typewriterIntervalRef.current = setInterval(() => {
       if (currentIndex < text.length) {
@@ -164,8 +164,7 @@ const CodebaseAssistant = ({ repoUrl, nodes = [], edges = [] }) => {
           <div className="response-header">
             <h4>
               Codebase Assistant 
-              {isPlaying && <span className="speaking-indicator">🔊 Speaking...</span>}
-              {isTyping && <span className="typing-indicator">⌨️ Typing...</span>}
+              {isPlaying && <span className="speaking-indicator"> 🔊 Speaking...</span>}
             </h4>
             <div className="response-controls">
               <button 
