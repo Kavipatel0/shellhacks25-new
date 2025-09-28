@@ -4,7 +4,7 @@
 
 const API_BASE_URL = import.meta.env.DEV
   ? "http://localhost:8000"
-  : "https://shellhacks25-uy86.vercel.app";
+  : "https://shellhacks25-backend.vercel.app";
 
 // Global reference to current audio for stopping
 let currentAudio = null;
