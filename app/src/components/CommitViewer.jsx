@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import CommitPreview from "./CommitPreview";
 
 function parseRepoInput(input) {
@@ -37,7 +38,7 @@ export default function CommitViewer() {
       if (parsed.commit) {
         fetchUrl = `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/commits/${parsed.commit}`;
       } else {
-        fetchUrl = `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/commits?per_page=10`;
+        fetchUrl = `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/commits?per_page=20`;
       }
       const res = await fetch(fetchUrl);
       if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
@@ -94,50 +95,63 @@ export default function CommitViewer() {
   };
 
   return (
-    <div className="w-full h-full bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="px-6 py-4">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Commit Viewer</h1>
-          <p className="text-gray-600">Explore and preview GitHub commits in real-time</p>
+    <div className="w-full h-full" style={{ backgroundColor: '#2d2d2d' }}>
+      {/* Navigation Bar */}
+      <div className="shadow-lg border-b" style={{ backgroundColor: '#1a1a1a', borderColor: '#404040' }}>
+        <div className="px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center justify-center">
+            <Link to="/" className="text-2xl font-bold text-blue-400 transition-colors duration-200">
+              GITFLOW
+            </Link>
+          </div>
+          <div className="flex-1 flex justify-center">
+            <h2 className="text-4xl font-semibold text-white">Commit Viewer</h2>
+          </div>
+          <div className="w-24"></div> {/* Spacer for centering */}
+        </div>
+        <div className="pb-4">
+          <p className="text-gray-300 text-center text-lg">Explore and preview GitHub commits in real-time</p>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white border-b px-6 py-4">
-        <div className="flex gap-3">
+      <div className="border-b px-6 py-4" style={{ backgroundColor: '#1a1a1a', borderColor: '#404040' }}>
+        <div className="flex gap-3 items-end">
           <div className="flex-1">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              className="w-full text-black px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="w-full px-4 py-3 text-white placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              style={{ backgroundColor: '#404040', borderColor: '#606060' }}
               placeholder="owner/repo or full GitHub URL (e.g. facebook/react)"
             />
           </div>
-          <button
-            onClick={fetchCommits}
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Fetching..." : "Fetch Commits"}
-          </button>
-          {commits.length > 0 && (
+          <div className="flex gap-3">
             <button
-              onClick={() => openEmbed()}
-              disabled={previewLoading}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={fetchCommits}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
-              {previewLoading ? "Starting..." : "Preview Latest"}
+              {loading ? "Fetching..." : "Fetch Commits"}
             </button>
-          )}
+            {commits.length > 0 && (
+              <button
+                onClick={() => openEmbed()}
+                disabled={previewLoading}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                {previewLoading ? "Starting..." : "Preview Latest"}
+              </button>
+            )}
+          </div>
         </div>
         {error && (
-          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          <div className="mt-3 p-3 border rounded-lg text-red-300" style={{ backgroundColor: '#3d1a1a', borderColor: '#7f1a1a' }}>
             {error}
           </div>
         )}
         {previewLoading && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
+          <div className="mt-3 p-3 border rounded-lg text-blue-300" style={{ backgroundColor: '#1a3d3d', borderColor: '#1a7f7f' }}>
             Starting preview container...
           </div>
         )}
@@ -146,17 +160,17 @@ export default function CommitViewer() {
       {/* Main Content - Side by Side Layout */}
       <div className="flex h-[calc(100vh-200px)]">
         {/* Left Side - Commits List */}
-        <div className="w-1/3 bg-white border-r border-gray-200 flex flex-col">
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">
+        <div className="w-1/3 border-r flex flex-col" style={{ backgroundColor: '#1a1a1a', borderColor: '#404040' }}>
+          <div className="p-6.5 border-b" style={{ borderColor: '#404040' }}>
+            <h2 className="text-xl font-semibold text-white">
               {commits.length > 0 ? `Commits (${commits.length})` : "Commits"}
             </h2>
           </div>
           
           <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <div className="p-4 text-center text-gray-500">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <div className="p-4 text-center text-gray-400">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
                 Loading commits...
               </div>
             ) : commits.length > 0 ? (
@@ -164,28 +178,46 @@ export default function CommitViewer() {
                 {commits.map((c, index) => (
                   <div
                     key={c.sha}
-                    className={`mb-3 p-4 rounded-lg border transition-all duration-200 hover:shadow-md cursor-pointer ${
+                    className={`mb-3 p-4 rounded-lg border transition-all duration-200 hover:shadow-lg cursor-pointer ${
                       embedTarget === `${parseRepoInput(input.trim())?.owner}-${parseRepoInput(input.trim())?.repo}-${c.sha}`
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 bg-white hover:border-gray-300'
+                        ? 'border-blue-500'
+                        : 'hover:border-gray-500'
                     }`}
+                    style={{
+                      backgroundColor: embedTarget === `${parseRepoInput(input.trim())?.owner}-${parseRepoInput(input.trim())?.repo}-${c.sha}`
+                        ? '#1a3d5c'
+                        : '#404040',
+                      borderColor: embedTarget === `${parseRepoInput(input.trim())?.owner}-${parseRepoInput(input.trim())?.repo}-${c.sha}`
+                        ? '#3b82f6'
+                        : '#606060'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (embedTarget !== `${parseRepoInput(input.trim())?.owner}-${parseRepoInput(input.trim())?.repo}-${c.sha}`) {
+                        e.target.style.borderColor = '#808080';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (embedTarget !== `${parseRepoInput(input.trim())?.owner}-${parseRepoInput(input.trim())?.repo}-${c.sha}`) {
+                        e.target.style.borderColor = '#606060';
+                      }
+                    }}
                     onClick={() => openEmbed(c.sha)}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 text-sm leading-tight mb-1">
+                        <h3 className="font-medium text-white text-sm leading-tight mb-1">
                           {c.commit.message.split("\n")[0]}
                         </h3>
-                        <p className="text-xs text-gray-500 truncate">
+                        <p className="text-xs truncate">
                           {c.sha.substring(0, 7)}
                         </p>
                       </div>
-                      <span className="text-xs text-gray-400 ml-2">
+                      <span className="text-xs ml-2">
                         #{commits.length - index}
                       </span>
                     </div>
                     
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                    <div className="flex items-center justify-between text-xs mb-3">
                       <span>{c.commit.author?.name}</span>
                       <span>{new Date(c.commit.author?.date).toLocaleDateString()}</span>
                     </div>
@@ -195,7 +227,7 @@ export default function CommitViewer() {
                         href={c.html_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-blue-600 hover:text-blue-800 text-xs font-medium"
+                        className="text-blue-400 text-xs font-medium"
                         onClick={(e) => e.stopPropagation()}
                       >
                         View on GitHub
@@ -206,7 +238,7 @@ export default function CommitViewer() {
                           openEmbed(c.sha);
                         }}
                         disabled={previewLoading}
-                        className="text-green-600 hover:text-green-800 text-xs font-medium disabled:opacity-50"
+                        className="text-green-400 hover:text-green-300 text-xs font-medium disabled:opacity-50"
                       >
                         {previewLoading ? "Starting..." : "Preview"}
                       </button>
@@ -215,28 +247,28 @@ export default function CommitViewer() {
                 ))}
               </div>
             ) : (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-4 text-center">
                 <div className="text-4xl mb-2">📝</div>
-                <p>No commits loaded yet</p>
-                <p className="text-sm">Enter a repository and click "Fetch Commits"</p>
+                <p className="text-white">No commits loaded yet</p>
+                <p className="text-sm text-white">Enter a repository and click "Fetch Commits"</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Right Side - Preview */}
-        <div className="flex-1 bg-gray-100 flex flex-col">
-          <div className="p-4 border-b border-gray-200 bg-white">
-            <h2 className="text-xl font-semibold text-gray-900">Live Preview</h2>
-            <p className="text-sm text-gray-600">Interactive preview of your selected commit</p>
+        <div className="flex-1 flex flex-col" style={{ backgroundColor: '#2d2d2d' }}>
+          <div className="p-4 border-b" style={{ backgroundColor: '#1a1a1a', borderColor: '#404040' }}>
+            <h2 className="text-xl font-semibold text-white">Live Preview</h2>
+            <p className="text-sm text-gray-300">Interactive preview of your selected commit</p>
           </div>
           
           <div className="flex-1 p-4">
             {embedTarget ? (
               <CommitPreview id={embedTarget} />
             ) : (
-              <div className="h-full flex items-center justify-center bg-white rounded-lg border-2 border-dashed border-gray-300">
-                <div className="text-center text-gray-500">
+              <div className="h-full flex items-center justify-center rounded-lg border-2 border-dashed" style={{ backgroundColor: '#1a1a1a', borderColor: '#606060' }}>
+                <div className="text-center text-gray-400">
                   <div className="text-6xl mb-4">🚀</div>
                   <h3 className="text-lg font-medium mb-2">Ready to Preview</h3>
                   <p>Select a commit from the list to see a live preview</p>
