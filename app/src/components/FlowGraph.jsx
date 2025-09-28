@@ -10,6 +10,7 @@ import {
   Position,
   getBezierPath,
   EdgeLabelRenderer,
+  useReactFlow,
 } from '@xyflow/react';
 import '@xyflow/react/dist/base.css';
 
@@ -95,6 +96,24 @@ const CustomEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, ta
   );
 };
 
+// Component to handle auto-fit view
+function AutoFitView({ nodes }) {
+  const { fitView } = useReactFlow();
+
+  useEffect(() => {
+    // Auto-fit view when component mounts or when nodes change
+    if (nodes && nodes.length > 0) {
+      const timer = setTimeout(() => {
+        fitView({ padding: 0.1, duration: 800 });
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [fitView, nodes]);
+
+  return null;
+}
+
 export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, expandedFolders, onFileClick, selectedFilePath, isNodeHighlighted, isEdgeHighlighted }) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges || []);
@@ -155,6 +174,7 @@ export default function FlowGraph({ initialNodes, initialEdges, onToggleFolder, 
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
       >
+        <AutoFitView nodes={nodes} />
         <Background 
           color="#404040" 
           gap={20} 
