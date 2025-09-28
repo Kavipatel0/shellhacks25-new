@@ -448,6 +448,18 @@ function App() {
         {/* Graph Section */}
         {nodes.length > 0 && (
           <div className="graph-section">
+            {/* Legend */}
+            <div className="graph-legend">
+              <div className="legend-item">
+                <div className="legend-color folder-legend"></div>
+                <span className="legend-text">Folder</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-color file-legend"></div>
+                <span className="legend-text">File</span>
+              </div>
+            </div>
+            
             <FlowGraph 
               initialNodes={nodes} 
               initialEdges={edges} 
