@@ -72,7 +72,7 @@ body {
 
 /* Project Name */
 .hero-project-name {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 600;
   margin-bottom: 1rem;
   color: #58a6ff;
@@ -615,7 +615,7 @@ body {
   }
   
   .hero-project-name {
-    font-size: 1.25rem;
+    font-size: 3rem;
   }
   
   .hero-main-title {
